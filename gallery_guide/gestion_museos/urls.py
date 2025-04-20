@@ -19,5 +19,6 @@ from django.urls import path
 from gestion_museos import views
 
 urlpatterns = [
-    path('', views.sample_http, name='sample_1')
+    path('grafo/<str:museum_name>/', views.museum_graph_view, name='museum_graph'),
+    path('obras-por-sala/<str:room_name>/', views.obras_por_sala, name='obras_por_sala'),
 ]

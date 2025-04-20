@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2 class="my-4 text-center">Grafo de {{ museum.name }}</h2>
+
+  <!-- Grafo principal (salas) -->
+  <div id="graph-container-salas" style="height: 400px; border: 1px solid #ccc; margin-bottom: 30px;"></div>
+
+  <!-- Grafo secundario (obras de la sala seleccionada) -->
+  <h3 id="obra-title" style="display:none;">Obras en la sala: <span id="sala-nombre"></span></h3>
+  <div id="graph-container-obras" style="height: 400px; border: 1px solid #ccc; display:none;"></div>
+
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+  <script>
+    // ========= GRAFO PRINCIPAL: SALAS =========
+    const salaNodes = new vis.DataSet([
+      {% for room in rooms %}
+        { id: "{{ room.name }}", label: "{{ room.name }}", title: "{{ room.description }}" },
+      {% endfor %}
+    ]);
+
+    const salaEdges = new vis.DataSet([
+      {% for from_room, to_room in connections %}
+        { from: "{{ from_room }}", to: "{{ to_room }}" },
+      {% endfor %}
+    ]);
+
+    const salaData = { nodes: salaNodes, edges: salaEdges };
+    const salaOptions = {
+      nodes: { shape: 'dot', size: 20, font: { size: 16 }, borderWidth: 2 },
+      edges: { arrows: 'to' },
+      physics: { enabled: true, stabilization: { iterations: 500 } }
+    };
+
+    const salaContainer = document.getElementById('graph-container-salas');
+    const salaNetwork = new vis.Network(salaContainer, salaData, salaOptions);
+
+    // ========= GRAFO SECUNDARIO: OBRAS =========
+    const obraContainer = document.getElementById('graph-container-obras');
+    const obraTitle = document.getElementById('obra-title');
+    const salaNombreSpan = document.getElementById('sala-nombre');
+
+    salaNetwork.on("click", function (params) {
+      if (params.nodes.length > 0) {
+        const sala = params.nodes[0];
+        salaNombreSpan.textContent = sala;
+        obraTitle.style.display = "block";
+        obraContainer.style.display = "block";
+
+        fetch(`/museos/obras-por-sala/${encodeURIComponent(sala)}/`)
+          .then(res => res.json())
+          .then(data => {
+            const nodes = new vis.DataSet(data.nodes);
+            const edges = new vis.DataSet(data.edges);
+            const container = document.getElementById('graph-container-obras');
+            const network = new vis.Network(container, { nodes, edges }, {
+              nodes: {
+                shape: 'box',
+                size: 20,
+                font: { size: 14, color: '#000' }
+              },
+              edges: {
+                arrows: 'to',
+                smooth: true
+              },
+              physics: {
+                enabled: true,
+                stabilization: { iterations: 300 }
+              },
+              groups: {
+                artwork: { color: { background: '#ffd966' } },
+                movement: { color: { background: '#a4c2f4' } }
+              }
+            });
+          });
+      }
+    });
+  </script>
+{% endblock %}
