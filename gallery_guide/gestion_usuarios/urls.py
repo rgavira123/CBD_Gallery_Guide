@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from gestion_museos import views
+from gestion_usuarios import views
 
 urlpatterns = [
     path('', views.sample_http, name='sample_1')
