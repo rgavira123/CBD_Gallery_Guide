@@ -1,0 +1,214 @@
+/* Gallery Guide Main Stylesheet */
+:root {
+    --primary: #d25745;
+    --primary-light: #e67e6c;
+    --primary-dark: #b64537;
+    --white: #ffffff;
+    --black: #000000;
+    --light-gray: #f8f9fa;
+    --dark-gray: #343a40;
+    --medium-gray: #6c757d;
+}
+  
+body {
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.6;
+    color: var(--dark-gray);
+    background-color: var(--white);
+}
+  
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--dark-gray);
+}
+  
+h1 {
+    font-size: 2.5rem;
+}
+  
+h2 {
+    font-size: 2rem;
+}
+  
+a {
+    color: var(--dark-gray); /* Cambia el color a negro */
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+  
+a:hover {
+    color: var(--primary-dark); /* Mantén el hover con el color primario oscuro */
+    text-decoration: none;
+}
+  
+p {
+    margin-bottom: 1.5rem;
+}
+  
+/* Navbar styles */
+.navbar {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+  
+.navbar-brand img {
+    height: 40px;
+    filter: brightness(0) invert(1); /* Hace el logo blanco para el fondo rojo */
+}
+  
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    margin: 0 0.2rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+  
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: var(--white);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+  
+.navbar-dark .navbar-nav .active > .nav-link,
+.navbar-dark .navbar-nav .nav-link.active {
+    color: var(--white);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+  
+/* User welcome text */
+.user-welcome {
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+}
+  
+/* Button styles */
+.btn {
+    border-radius: 5px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+  
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--white); /* El texto sigue siendo blanco */
+}
+  
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: var(--white); /* El texto sigue siendo blanco */
+}
+  
+.btn-outline-primary {
+    border-color: var(--primary);
+    color: var(--dark-gray); /* Cambia el texto a negro */
+}
+  
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: var(--white); /* Cambia el texto a blanco al hacer hover */
+}
+
+.btn-light.text-dark {
+    color: var(--dark-gray) !important; /* Asegura que el texto sea negro */
+}
+
+/* Feature Cards */
+.feature-card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
+  
+/* Card styles */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+    margin-bottom: 1.5rem;
+    border: none;
+}
+  
+.card:hover {
+    transform: translateY(-5px);
+}
+  
+/* Hero section styles */
+.hero-section {
+    padding: 5rem 0;
+    text-align: center;
+    background-color: var(--light-gray);
+    background-image: linear-gradient(120deg, #f8f9fa, #e9ecef);
+}
+  
+.logo-container {
+    margin-bottom: 2rem;
+}
+  
+.logo-container img {
+    max-width: 200px;
+    height: auto;
+}
+  
+/* CTA Section */
+.cta-section {
+    background-color: var(--primary);
+    padding: 4rem 0;
+}
+
+.cta-section h2 {
+    color: var(--white);
+}
+
+/* Auth buttons */
+.auth-buttons .btn {
+    margin-left: 0.5rem;
+}
+  
+/* Footer */
+footer {
+    background-color: var(--light-gray);
+    padding: 2rem 0;
+    margin-top: 0;
+}
+  
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .navbar-brand img {
+        height: 30px;
+    }
+    
+    .hero-section {
+        padding: 3rem 0;
+    }
+    
+    .logo-container img {
+        max-width: 150px;
+    }
+}
