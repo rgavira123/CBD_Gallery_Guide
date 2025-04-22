@@ -1,12 +1,122 @@
-{% extends "base.html"%}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}
-  <title> Gallery Guide </title>
+<title>Gallery Guide - Tu guía de arte y museos</title>
 {% endblock title %}
 
 {% block content %}
+<main>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+          <div class="logo-container">
+            <img src="{% static 'images/logo-nofondo.png' %}" alt="Gallery Guide Logo" class="img-fluid">
+          </div>
+          <h1>Bienvenido a Gallery Guide</h1>
+          <p class="lead mb-4">
+            Descubre los mejores museos, crea rutas personalizadas y vive experiencias artísticas únicas.
+            Gallery Guide te conecta con el arte y la cultura de manera sencilla e intuitiva.
+          </p>
+          <a href="/museos/" class="btn btn-primary btn-lg">Explora Museos</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <h1> Hola <h1>
+  <!-- Features Section -->
+  <section class="features-section py-5">
+    <div class="container">
+      <h2 class="text-center mb-5">Tu aventura artística comienza aquí</h2>
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+              <div class="feature-icon">
+                <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+              </div>
+              <h3 class="card-title">Descubre Museos</h3>
+              <p class="card-text">
+                Explora nuestra selección de museos y galerías con información detallada, 
+                ubicaciones y exposiciones actuales.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+              <div class="feature-icon">
+                <i class="fas fa-route fa-3x mb-3"></i>
+              </div>
+              <h3 class="card-title">Crea Rutas</h3>
+              <p class="card-text">
+                Diseña tus propias rutas culturales combinando diferentes lugares 
+                según tus intereses artísticos.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+              <div class="feature-icon">
+                <i class="fas fa-share-alt fa-3x mb-3"></i>
+              </div>
+              <h3 class="card-title">Explora Comunidad</h3>
+              <p class="card-text">
+                Descubre rutas populares creadas por otros amantes del arte y encuentra 
+                nuevas joyas artísticas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <!-- Call to Action -->
+  <section class="cta-section py-5 bg-primary text-white">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+          <h2>¿Listo para explorar?</h2>
+          <p class="mb-4">
+            Regístrate hoy para personalizar tus rutas culturales y empezar a descubrir arte y cultura a tu medida.
+          </p>
+          <div class="d-flex justify-content-center gap-3">
+            <a href="/museos/" class="btn btn-outline-light">Ver Museos</a>
+            <a href="{% url 'registro' %}" class="btn btn-outline-light">Crear Cuenta</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <p>© {% now "Y" %} Gallery Guide. Todos los derechos reservados.</p>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <ul class="list-inline mb-0">
+          <li class="list-inline-item">
+            <a href="/sobre-nosotros/">Sobre Nosotros</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="/contacto/">Contacto</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="/privacidad/">Política de Privacidad</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
 {% endblock content %}
