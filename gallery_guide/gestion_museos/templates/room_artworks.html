@@ -113,7 +113,7 @@
             <!-- Información principal -->
             <h3 class="detail-title">{{ selected_artwork.title }}</h3>
             <div class="detail-artist mb-3">
-              <a href="#" class="artist-link">
+              <a href="{% url 'obras_autor' selected_artwork.artist.all.0.slug %}" class="artist-link">
                 <i class="fas fa-user-circle me-1"></i>
                 {{ selected_artwork.artist.all.0.name }}
               </a>
@@ -139,7 +139,7 @@
               <ul class="specs-list">
                 <li>
                   <span class="specs-label">Movimiento:</span>
-                  <a href="#" class="movement-link">
+                  <a href="{% url 'obras_movimiento' selected_artwork.movement.all.0.slug %}" class="movement-link">
                     {{ selected_artwork.movement.all.0.name|default:"No especificado" }}
                   </a>
                 </li>
@@ -206,7 +206,7 @@
         
         <h3 class="detail-title">${artwork.title}</h3>
         <div class="detail-artist mb-3">
-          <a href="#" class="artist-link">
+          <a href="/autores/${artwork.artist_slug}/obras/" class="artist-link">
             <i class="fas fa-user-circle me-1"></i>
             ${artwork.artist_name}
           </a>
@@ -227,7 +227,7 @@
           <ul class="specs-list">
             <li>
               <span class="specs-label">Movimiento:</span>
-              <a href="#" class="movement-link">
+              <a href="/movimientos/${artwork.movement_slug}/obras/" class="movement-link">
                 ${artwork.movement_name || "No especificado"}
               </a>
             </li>
