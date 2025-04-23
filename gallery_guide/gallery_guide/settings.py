@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'gestion_museos',
     'home',
-    'gestion_usuarios'
+    'gestion_usuarios',
+    'gestion_autores'
 ]
 
 MIDDLEWARE = [
