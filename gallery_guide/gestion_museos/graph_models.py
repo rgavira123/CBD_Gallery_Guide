@@ -50,14 +50,20 @@ class Artwork(StructuredNode):
 
 class Artist(StructuredNode):
     name = StringProperty(unique_index=True, required=True)
+    image = StringProperty()  # Esto debería contener solo el nombre del archivo, no la ruta completa
     bio = StringProperty(default="")
     birth_date = StringProperty()
     death_date = StringProperty()
     nationality = StringProperty()
-    image = StringProperty()  # Imagen en base64
 
     artworks = RelationshipFrom('Artwork', 'CREATED_BY')
     movements = RelationshipTo('Movement', 'PART_OF')
+
+    # Puedes añadir este método para obtener la URL completa si es necesario
+    def get_image_url(self):
+        if self.image:
+            return f"images/autores/{self.image}"
+        return None
 
 class Movement(StructuredNode):
     name = StringProperty(unique_index=True, required=True)

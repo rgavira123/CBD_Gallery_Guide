@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+<title>Obras de {{ author.name }} | Gallery Guide</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="mb-3">Obras de {{ author.name }}</h1>
+            <p class="lead text-muted">Explora la relación entre las obras, movimientos artísticos y museos donde se exhiben</p>
+        </div>
+    </div>
+
+    <!-- Sección de filtros -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-4 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Filtros</h5>
+                    <form id="filter-form" class="mt-3">
+                        <div class="mb-3">
+                            <label for="museum-filter" class="form-label">Museo</label>
+                            <select class="form-select" id="museum-filter">
+                                <option value="">Todos los museos</option>
+                                {% for museum in museums %}
+                                <option value="{{ museum.name }}">{{ museum.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Aplicar filtros</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del artista -->
+    <div class="row mb-4">
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow-sm artist-profile-card">
+                <div class="card-body p-5">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            {% if author.image %}
+                            <!-- Imagen circular más grande del autor -->
+                            <div class="avatar-container mx-auto">
+                                <img src="{% static 'images/autores/' %}{{ author.image|cut:'images/autores/' }}" 
+                                     alt="{{ author.name }}" 
+                                     class="img-fluid rounded-circle artist-avatar"
+                                     style="width: 220px; height: 220px; object-fit: cover; border: 5px solid #f8f9fa;">
+                            </div>
+                            {% else %}
+                            <div class="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center" 
+                                 style="width: 220px; height: 220px; border: 5px solid #f8f9fa;">
+                                <i class="fas fa-user-circle fa-5x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-7 artist-info-container">
+                            <h3 class="mb-3 text-md-start">{{ author.name }}</h3>
+                            <p class="text-muted mb-3">
+                                <i class="fas fa-globe-americas me-2"></i>{{ author.nationality }} | 
+                                <i class="fas fa-birthday-cake ms-2 me-2"></i>{{ author.birth_date }} - 
+                                {% if author.death_date %}{{ author.death_date }}{% else %}Presente{% endif %}
+                            </p>
+                            <p class="mb-3">{{ author.bio }}</p>
+                            
+                            {% if author.movements.all %}
+                            <div>
+                                <strong><i class="fas fa-paint-brush me-2"></i>Movimientos:</strong>
+                                <div class="mt-2">
+                                    {% for movement in author.movements.all %}
+                                    <span class="badge bg-light text-dark me-2 mb-2 p-2">{{ movement.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafo de obras -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Grafo de obras y relaciones</h4>
+                    <div id="graph-container" style="height: 600px; border: 1px solid #eee;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leyenda del grafo -->
+    <div class="row mt-4">
+        <div class="col-md-8 col-lg-6 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Leyenda</h5>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <div class="d-flex align-items-center">
+                            <span class="me-2" style="width: 20px; height: 20px; background-color: #e67e6c; border-radius: 50%; display: inline-block;"></span>
+                            <span>Obra</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="me-2" style="width: 20px; height: 20px; background-color: #5d9cec; border-radius: 50%; display: inline-block;"></span>
+                            <span>Movimiento</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="me-2" style="width: 20px; height: 20px; background-color: #4fc1e9; border-radius: 50%; display: inline-block;"></span>
+                            <span>Museo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para el grafo -->
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const graphContainer = document.getElementById('graph-container');
+        const filterForm = document.getElementById('filter-form');
+        const museumFilter = document.getElementById('museum-filter');
+        
+        let network = null;
+        
+        // Opciones del grafo
+        const options = {
+            nodes: {
+                shape: 'dot',
+                size: 25,
+                font: {
+                    size: 14,
+                    face: 'Montserrat'
+                },
+                borderWidth: 2,
+                shadow: true
+            },
+            edges: {
+                width: 2,
+                shadow: true,
+                smooth: {
+                    type: 'dynamic'
+                }
+            },
+            physics: {
+                stabilization: {
+                    iterations: 100
+                },
+                barnesHut: {
+                    gravitationalConstant: -2000,
+                    centralGravity: 0.1,
+                    springLength: 150,
+                    springConstant: 0.05,
+                    damping: 0.09
+                }
+            },
+            groups: {
+                artwork: {
+                    color: {
+                        background: '#e67e6c',
+                        border: '#d25745',
+                        highlight: {
+                            background: '#e67e6c',
+                            border: '#d25745'
+                        }
+                    }
+                },
+                movement: {
+                    color: {
+                        background: '#5d9cec',
+                        border: '#4a89dc',
+                        highlight: {
+                            background: '#5d9cec',
+                            border: '#4a89dc'
+                        }
+                    }
+                },
+                museum: {
+                    color: {
+                        background: '#4fc1e9',
+                        border: '#3bafda',
+                        highlight: {
+                            background: '#4fc1e9',
+                            border: '#3bafda'
+                        }
+                    }
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200
+            }
+        };
+        
+        // Función para cargar los datos del grafo
+        function loadGraphData(museumFilter = '') {
+            let url = `/autores/api/obras-autor/{{ author.name }}/`;
+            if (museumFilter) {
+                url += `?museum=${encodeURIComponent(museumFilter)}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                        return;
+                    }
+                    
+                    // Crear el grafo con los datos recibidos
+                    const nodes = new vis.DataSet(data.nodes);
+                    const edges = new vis.DataSet(data.edges);
+                    
+                    const graphData = {
+                        nodes: nodes,
+                        edges: edges
+                    };
+                    
+                    // Destruir el grafo anterior si existe
+                    if (network !== null) {
+                        network.destroy();
+                    }
+                    
+                    // Crear el nuevo grafo
+                    network = new vis.Network(graphContainer, graphData, options);
+                    
+                    // Eventos del grafo
+                    network.on("click", function(params) {
+                        if (params.nodes.length > 0) {
+                            const nodeId = params.nodes[0];
+                            const node = nodes.get(nodeId);
+                            console.log('Clicked node:', node);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar los datos del grafo:', error);
+                });
+        }
+        
+        // Cargar datos iniciales
+        loadGraphData();
+        
+        // Manejar el envío del formulario de filtros
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            loadGraphData(museumFilter.value);
+        });
+    });
+</script>
+
+<!-- Call to Action -->
+<section class="cta-section text-white text-center mt-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="mb-4">Descubre más artistas y sus obras</h2>
+                <p class="lead mb-4">Explora nuestra colección de más de 25 artistas influyentes y sus obras maestras</p>
+                <a href="/autores/" class="btn btn-light text-dark">Volver a Artistas</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

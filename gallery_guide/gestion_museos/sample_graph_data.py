@@ -64,13 +64,17 @@ def create_artists(movements):
     ]
     artists = {}
     for name, bio, birth, death, nat, movs in artist_data:
+        if name == 'Leonardo da Vinci':
+            imagen = 'davinci.jpg'
+        else:
+            imagen=""
         a = Artist(
             name=name,
             bio=bio,
             birth_date=birth,
             death_date=death,
             nationality=nat,
-            image=""
+            image=imagen
         ).save()
         for m in movs:
             a.movements.connect(movements[m])
