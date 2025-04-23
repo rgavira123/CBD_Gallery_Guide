@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+<title>Autores | Gallery Guide</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto text-center">
+            <h1 class="mb-3">Artistas Destacados</h1>
+            <p class="lead text-muted">Descubre a los artistas más influyentes y sus obras maestras en nuestra colección.</p>
+        </div>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for artista in artistas %}
+        <div class="col mb-4">
+            <div class="card feature-card h-100">
+                {% if artista.image %}
+                <!-- Evitar duplicación de ruta - usar solo el nombre de archivo -->
+                <img src="{% static 'images/autores/' %}{{ artista.image|cut:'images/autores/' }}" class="card-img-top" alt="{{ artista.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="bg-light text-center py-5">
+                    <i class="fas fa-user-circle fa-4x feature-icon"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ artista.name }}</h5>
+                    <p class="card-text text-muted">
+                        <small>{{ artista.birth_date }} - {% if artista.death_date %}{{ artista.death_date }}{% else %}Presente{% endif %}</small>
+                    </p>
+                    <p class="card-text">{{ artista.bio|truncatechars:100 }}</p>
+                    
+                    {% if artista.movements.all %}
+                    <div class="mt-3">
+                        {% for mov in artista.movements.all %}
+                        <span class="badge bg-light text-dark">{{ mov.name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <a href="/autores/{{ artista.name }}/obras/" class="btn btn-primary btn-sm w-100">Ver obras</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-light shadow-sm text-center py-4">
+                <i class="fas fa-info-circle mb-3 text-primary fa-2x"></i>
+                <p class="mb-0">No se encontraron artistas en la base de datos.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Sección CTA -->
+<section class="cta-section text-white text-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="mb-4">¿Quieres saber más sobre estos artistas?</h2>
+                <p class="lead mb-4">Explora nuestra colección de arte y descubre las historias detrás de las obras maestras.</p>
+                <a href="/museos/" class="btn btn-light text-dark">Visitar museos</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
