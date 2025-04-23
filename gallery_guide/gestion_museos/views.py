@@ -168,7 +168,7 @@ def room_artworks_view(request, museum_slug, room_name):
         selected_artwork = None
         if selected_artwork_id:
             for artwork in artworks:
-                if str(artwork.element_id) == selected_artwork_id:
+                if str(artwork.element_id) == selected_artwork_id:  # Cambiar id por element_id
                     selected_artwork = artwork
                     break
         
@@ -194,14 +194,14 @@ def room_artworks_view(request, museum_slug, room_name):
 
 def artwork_detail(request, artwork_id):
     try:
-        artwork = Artwork.nodes.get(id=artwork_id)
+        artwork = Artwork.nodes.get(element_id=artwork_id)
         
         # Formato para JSON
         artist = artwork.artist.single() if artwork.artist else None
         movement = artwork.movement.single() if artwork.movement else None
         
         return JsonResponse({
-            'id': artwork.id,
+            'id': artwork.element_id,  # Cambiar id por element_id
             'title': artwork.title,
             'year': artwork.year,
             'description': artwork.description,
@@ -211,9 +211,9 @@ def artwork_detail(request, artwork_id):
             'masterpiece': artwork.masterpiece,
             'image': artwork.image,
             'artist_name': artist.name if artist else "Desconocido",
-            'artist_id': artist.id if artist else None,
+            'artist_id': artist.element_id if artist else None,  # Cambiar id por element_id
             'movement_name': movement.name if movement else "No especificado",
-            'movement_id': movement.id if movement else None,
+            'movement_id': movement.element_id if movement else None,  # Cambiar id por element_id
         })
     except Artwork.DoesNotExist:
         return JsonResponse({'error': 'Artwork not found'}, status=404)

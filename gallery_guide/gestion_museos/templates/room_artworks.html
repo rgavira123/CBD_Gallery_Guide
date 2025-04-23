@@ -43,9 +43,9 @@
         <div class="card-body p-0">
           <div class="artwork-list">
             {% for artwork in artworks %}
-            <div class="artwork-card {% if selected_artwork and selected_artwork.id == artwork.id %}active{% endif %}" 
-                data-id="{{ artwork.id }}"
-                onclick="selectArtwork('{{ artwork.id }}')">
+            <div class="artwork-card {% if selected_artwork and selected_artwork.element_id == artwork.element_id %}active{% endif %}" 
+                data-id="{{ artwork.element_id }}"
+                onclick="selectArtwork('{{ artwork.element_id }}')">
               <div class="artwork-image">
                 {% if artwork.image %}
                 <img src="data:image/jpeg;base64,{{ artwork.image }}" alt="{{ artwork.title }}">
