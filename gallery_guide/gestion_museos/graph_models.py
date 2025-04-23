@@ -3,6 +3,7 @@ from neomodel import (
     IntegerProperty, BooleanProperty, FloatProperty,
     RelationshipTo, RelationshipFrom, StructuredRel
 )
+from django.utils.text import slugify  # Importa slugify para generar slugs
 
 # Definición de relación estructurada para las conexiones entre salas
 class ConnectedRel(StructuredRel):
@@ -12,6 +13,7 @@ class ConnectedRel(StructuredRel):
 # Resto de definiciones de modelos
 class Museum(StructuredNode):
     name = StringProperty(unique_index=True, required=True)
+    slug = StringProperty(unique_index=True)  # Nuevo campo slug
     location = StringProperty(required=True)
     description = StringProperty(default="")
     foundation_year = StringProperty()
@@ -20,14 +22,22 @@ class Museum(StructuredNode):
 
     rooms = RelationshipTo('Room', 'HAS_ROOM')
 
+    def save(self, *args, **kwargs):
+        # Genera el slug automáticamente basado en el nombre
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+        return self
+
 class Room(StructuredNode):
     name = StringProperty(required=True)
+    slug = StringProperty()  # Ya no es unique_index
     description = StringProperty(default="")
     floor = IntegerProperty(default=0)
     is_entrance = BooleanProperty(default=False)
     is_exit = BooleanProperty(default=False)
     theme = StringProperty(default="")
-    transit_time = IntegerProperty(default=5)  # Tiempo estimado para ver la sala (minutos)
+    transit_time = IntegerProperty(default=5)
     
     # Relaciones
     connected_to = RelationshipTo('Room', 'CONNECTED_TO', model=ConnectedRel)
@@ -50,14 +60,20 @@ class Artwork(StructuredNode):
 
 class Artist(StructuredNode):
     name = StringProperty(unique_index=True, required=True)
+    image = StringProperty()  # Esto debería contener solo el nombre del archivo, no la ruta completa
     bio = StringProperty(default="")
     birth_date = StringProperty()
     death_date = StringProperty()
     nationality = StringProperty()
-    image = StringProperty()  # Imagen en base64
 
     artworks = RelationshipFrom('Artwork', 'CREATED_BY')
     movements = RelationshipTo('Movement', 'PART_OF')
+
+    # Puedes añadir este método para obtener la URL completa si es necesario
+    def get_image_url(self):
+        if self.image:
+            return f"images/autores/{self.image}"
+        return None
 
 class Movement(StructuredNode):
     name = StringProperty(unique_index=True, required=True)

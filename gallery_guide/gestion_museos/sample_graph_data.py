@@ -64,13 +64,17 @@ def create_artists(movements):
     ]
     artists = {}
     for name, bio, birth, death, nat, movs in artist_data:
+        if name == 'Leonardo da Vinci':
+            imagen = 'davinci.jpg'
+        else:
+            imagen=""
         a = Artist(
             name=name,
             bio=bio,
             birth_date=birth,
             death_date=death,
             nationality=nat,
-            image=""
+            image=imagen
         ).save()
         for m in movs:
             a.movements.connect(movements[m])
@@ -174,7 +178,7 @@ def create_museums_and_rooms(artworks):
             is_ex = exit and i == num_rooms - 1
             theme = themes[i] if themes else ""
             r = Room(
-                name=f"{name_prefix} - Sala {floor_index}.{i+1}",
+                name=f"{name_prefix}.{i+1}",
                 floor=floor_index,
                 is_entrance=is_ent,
                 is_exit=is_ex,
@@ -202,26 +206,26 @@ def create_museums_and_rooms(artworks):
 
     # Salas y asignaciones
     themes1 = ["Renacimiento", "Barroco", "Impresionismo", "Cubismo", "Surrealismo", "Pop Art"]
-    r1 = create_floor_rooms(m1, 0, 3, "Movimientos Piso 0", entrance=True, themes=themes1[:3])
-    r1 += create_floor_rooms(m1, 1, 3, "Movimientos Piso 1", exit=True, themes=themes1[3:])
+    r1 = create_floor_rooms(m1, 0, 3, "Movimientos - Sala 0", entrance=True, themes=themes1[:3])
+    r1 += create_floor_rooms(m1, 1, 3, "Movimientos - Sala 1", exit=True, themes=themes1[3:])
     for i in range(len(r1)-1): connect_rooms(r1[i], r1[i+1])
     assign_artworks_to_rooms(r1, 3)
 
     themes2 = ["Leonardo da Vinci", "Miguel Ángel", "Velázquez", "Van Gogh", "Monet", "Picasso"]
-    r2 = create_floor_rooms(m2, 0, 3, "Maestros Piso 0", entrance=True, themes=themes2[:3])
-    r2 += create_floor_rooms(m2, 1, 3, "Maestros Piso 1", exit=True, themes=themes2[3:])
+    r2 = create_floor_rooms(m2, 0, 3, "Maestros - Sala 0", entrance=True, themes=themes2[:3])
+    r2 += create_floor_rooms(m2, 1, 3, "Maestros - Sala 1", exit=True, themes=themes2[3:])
     for i in range(len(r2)-1): connect_rooms(r2[i], r2[i+1])
     assign_artworks_to_rooms(r2, 3)
 
     themes3 = ["Siglo XV-XVI", "Siglo XVII", "Siglo XVIII", "Siglo XIX", "Siglo XX"]
-    r3 = create_floor_rooms(m3, 0, 2, "Crono Piso 0", entrance=True, themes=themes3[:2])
-    r3 += create_floor_rooms(m3, 1, 2, "Crono Piso 1", themes=themes3[2:4])
-    r3 += create_floor_rooms(m3, 2, 1, "Crono Piso 2", exit=True, themes=themes3[4:])
+    r3 = create_floor_rooms(m3, 0, 2, "Crono - Sala 0", entrance=True, themes=themes3[:2])
+    r3 += create_floor_rooms(m3, 1, 2, "Crono - Sala 1", themes=themes3[2:4])
+    r3 += create_floor_rooms(m3, 2, 1, "Crono - Sala 2", exit=True, themes=themes3[4:])
     for i in range(len(r3)-1): connect_rooms(r3[i], r3[i+1])
     assign_artworks_to_rooms(r3, 3)
 
     themes4 = ["Clásicos", "Modernos", "Contemporáneos"]
-    r4 = create_floor_rooms(m4, 0, 3, "Mixto Piso 0", entrance=True, exit=True, themes=themes4)
+    r4 = create_floor_rooms(m4, 0, 3, "Mixto - Sala 0", entrance=True, exit=True, themes=themes4)
     for i in range(len(r4)-1):
         connect_rooms(r4[i], r4[i+1])
 

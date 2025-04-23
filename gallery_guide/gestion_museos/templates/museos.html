@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load time_utils %}
+
+{% block title %}<title>Museos | Gallery Guide</title>{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <header class="text-center mb-5">
+    <h1 class="display-4">Descubre nuestros museos</h1>
+    <p class="lead text-muted">Explora nuestra selección de museos y galerías de arte</p>
+  </header>
+
+  <div class="row">
+    {% for museo in museos %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100 museum-card">
+        <div class="ribbon-container">
+          <div class="ribbon">
+            <span class="duration">
+              <i class="far fa-clock"></i>
+              {% if museo.tiempo_total > 60 %}
+                {{ museo.tiempo_total|divisibleby:"60"|yesno:""|add:museo.tiempo_total|intdiv:60 }}h 
+                {{ museo.tiempo_total|modulo:60 }}m
+              {% else %}
+                {{ museo.tiempo_total }}m
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        <div class="museum-image">
+          {% if museo.image %}
+            <img src="data:image/jpeg;base64,{{ museo.image }}" class="card-img-top" alt="{{ museo.name }}">
+          {% else %}
+            <div class="placeholder-image">
+              <i class="fas fa-landmark fa-4x text-primary"></i>
+            </div>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <h2 class="card-title h4">{{ museo.name }}</h2>
+          <p class="card-text small text-muted mb-2">{{ museo.location }}</p>
+          <p class="card-text">{{ museo.description }}</p>
+          <div class="museum-details">
+            <span class="badge bg-light text-dark me-2"><i class="fas fa-building me-1"></i> {{ museo.floors }} planta{{ museo.floors|pluralize }}</span>
+            <span class="badge bg-light text-dark"><i class="fas fa-history me-1"></i> Fundado en {{ museo.foundation_year }}</span>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-0">
+          <div class="visit-time mb-3 text-center">
+            <span class="text-muted"><i class="far fa-clock me-1"></i>Tiempo estimado: 
+              {% if museo.tiempo_total > 60 %}
+                {{ museo.tiempo_total|divisibleby:"60"|yesno:""|add:museo.tiempo_total|intdiv:60 }} horas
+                {% if museo.tiempo_total|modulo:60 != 0 %} 
+                  {{ museo.tiempo_total|modulo:60 }} minutos
+                {% endif %}
+              {% else %}
+                {{ museo.tiempo_total }} minutos
+              {% endif %}
+            </span>
+          </div>
+          <a href="{% url 'museum_graph' museo.slug %}" class="btn btn-primary w-100">
+            <i class="fas fa-eye me-2"></i>Ver Museo
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i> No hay museos disponibles en este momento.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  .museum-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .museum-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+  }
+  
+  .museum-image {
+    height: 200px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+  }
+  
+  .museum-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .museum-card:hover .museum-image img {
+    transform: scale(1.1);
+  }
+  
+  .placeholder-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    background-color: #f8f9fa;
+  }
+  
+  .museum-details {
+    margin-top: 1rem;
+  }
+  
+  .badge {
+    padding: 0.5rem;
+    font-weight: normal;
+  }
+  
+  /* Ribbon para tiempo de visita */
+  .ribbon-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    overflow: hidden;
+  }
+  
+  .ribbon {
+    background: var(--primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    position: absolute;
+    top: 1.5rem;
+    right: -3rem;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 10rem;
+    text-align: center;
+  }
+  
+  .visit-time {
+    font-size: 0.9rem;
+  }
+</style>
+{% endblock %}

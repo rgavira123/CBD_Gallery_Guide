@@ -1,80 +1,503 @@
+<!-- filepath: c:\Users\ramon\trabajo_cbd\gallery_guide\gestion_museos\templates\museum_graph.html -->
 {% extends 'base.html' %}
+{% load time_utils %}
+{% block title %}<title>{{ museum.name }} | Gallery Guide</title>{% endblock %}
 
 {% block content %}
-  <h2 class="my-4 text-center">Grafo de {{ museum.name }}</h2>
+<div class="container py-5">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="mb-2">{{ museum.name }}</h1>
+          <p class="text-muted mb-0">{{ museum.location }}</p>
+        </div>
+        <div class="text-end">
+          <div class="time-badge">
+            <i class="far fa-clock me-1"></i>
+            <span>Tiempo total: 
+              {% if tiempo_total > 60 %}
+                {{ tiempo_total|divisibleby:"60"|yesno:""|add:tiempo_total|intdiv:60 }} h
+                {% if tiempo_total|modulo:60 != 0 %} 
+                  {{ tiempo_total|modulo:60 }} min
+                {% endif %}
+              {% else %}
+                {{ tiempo_total }} min
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- Grafo principal (salas) -->
-  <div id="graph-container-salas" style="height: 400px; border: 1px solid #ccc; margin-bottom: 30px;"></div>
+  <div class="card mb-5 shadow">
+    <div class="card-body">
+      <div class="row">
+        <!-- Grafo del museo (más ancho) -->
+        <div class="col-md-9">
+          <h2 class="card-title h4 mb-3">Mapa de salas</h2>
+          <div id="graph-container-salas" style="height: 550px; border: 1px solid #ccc;"></div>
+        </div>
+        
+        <!-- Leyenda (a la derecha, más estrecha) -->
+        <div class="col-md-3">
+          <h2 class="card-title h4 mb-3">Leyenda</h2>
+          
+          <!-- Leyenda de pisos -->
+          <div class="mb-4">
+            <h5 class="h6 mb-2">Pisos</h5>
+            <div class="floors-legend">
+              {% for floor in floors_range %}
+                <div class="floor-item">
+                  <span class="floor-indicator floor-{{ floor }}">P{{ floor }}</span>
+                  <span class="floor-name">Planta {{ floor }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          
+          <!-- Leyenda de iconos -->
+          <div class="mb-4">
+            <h5 class="h6 mb-2">Iconos</h5>
+            <div class="d-flex flex-column">
+              <div class="legend-item">
+                <span class="door-indicator entrance"></span>
+                <span>Entrada</span>
+              </div>
+              <div class="legend-item">
+                <span class="door-indicator exit"></span>
+                <span>Salida</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Leyenda de tiempos -->
+          <div>
+            <h5 class="h6 mb-2">Conexiones</h5>
+            <div class="legend-item mt-2">
+              <i class="fas fa-arrow-right text-primary"></i>
+              <span>Los tiempos en las conexiones indican minutos entre salas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <!-- Grafo secundario (obras de la sala seleccionada) -->
-  <h3 id="obra-title" style="display:none;">Obras en la sala: <span id="sala-nombre"></span></h3>
-  <div id="graph-container-obras" style="height: 400px; border: 1px solid #ccc; display:none;"></div>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
-  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script>
+  // ========= GRAFO PRINCIPAL: SALAS =========
+  const salaNodes = new vis.DataSet([
+    {% for room in rooms %}
+      { 
+        id: "{{ room.name }}", 
+        label: "", // Dejamos vacío porque lo pintaremos manualmente
+        roomName: "{{ room.name }}",
+        roomTime: {{ room.tiempo_visita }},
+        isEntrance: {% if room.is_entrance %}true{% else %}false{% endif %},
+        isExit: {% if room.is_exit %}true{% else %}false{% endif %},
+        title: "{{ room.theme }}{% if room.theme %} - {% endif %}{{ room.description }}\n\nTiempo estimado: {{ room.tiempo_visita }} min\nPiso: {{ room.floor }}{% if room.is_entrance %}\nEntrada{% endif %}{% if room.is_exit %}\nSalida{% endif %}", 
+        group: "floor{{ room.floor }}",
+        level: {{ room.floor }},
+        size: 25
+      },
+    {% endfor %}
+  ]);
 
-  <script>
-    // ========= GRAFO PRINCIPAL: SALAS =========
-    const salaNodes = new vis.DataSet([
-      {% for room in rooms %}
-        { id: "{{ room.name }}", label: "{{ room.name }}", title: "{{ room.description }}" },
+  const salaEdges = new vis.DataSet([
+    {% for from_room, to_room, transit_time in connections %}
+      { 
+        from: "{{ from_room }}",  // Asegúrate de que esto sea el slug
+        to: "{{ to_room }}",      // Asegúrate de que esto sea el slug
+        label: "{{ transit_time }} min",
+        title: "Tiempo de tránsito: {{ transit_time }} minutos",
+        arrows: {
+          to: {
+            enabled: true,
+            scaleFactor: 1.3
+          }
+        },
+        width: 2.5,
+        color: {color: '#777', highlight: 'var(--primary)', hover: '#444'},
+        smooth: {
+          enabled: true,
+          type: 'curvedCW',
+          roundness: 0.4
+        },
+        font: { 
+          size: 16,
+          color: '#333',
+          face: 'Montserrat',
+          background: 'white',
+          strokeWidth: 3,
+          strokeColor: '#ffffff',
+          align: 'middle',
+          vadjust: -8
+        }
+      },
+    {% endfor %}
+  ]);
+
+  const salaData = { nodes: salaNodes, edges: salaEdges };
+  const salaOptions = {
+    nodes: { 
+      shape: 'box',
+      shapeProperties: {
+        borderRadius: 10
+      },
+      margin: {
+        top: 25,
+        right: 25,
+        bottom: 25,
+        left: 25
+      },
+      shadow: true,
+      widthConstraint: {
+        minimum: 200,
+        maximum: 250
+      },
+      heightConstraint: {
+        minimum: 80 // Altura mínima para asegurar que cabe todo el contenido
+      },
+      font: {
+        size: 18, // Tamaño de fuente aumentado
+        face: 'Montserrat',
+        bold: true
+      }
+    },
+    edges: { 
+      length: 400, // Aumentar para mayor separación entre nodos
+      font: { 
+        size: 16, // Tamaño de fuente aumentado
+        background: 'white',
+        strokeWidth: 3,
+        strokeColor: 'white'
+      }
+    },
+    physics: {
+      enabled: false
+    },
+    layout: {
+      hierarchical: {
+        enabled: true,
+        levelSeparation: 250, // Mayor separación vertical
+        nodeSpacing: 400,    // Mayor separación horizontal
+        direction: 'UD',
+        sortMethod: 'directed',
+        shakeTowards: 'roots'
+      }
+    },
+    groups: {
+      {% for floor in floors_range %}
+      'floor{{ floor }}': {
+        color: {
+          background: getFloorColor({{ floor }}),
+          border: getBorderColor({{ floor }}),
+          highlight: {
+            background: getFloorHighlightColor({{ floor }}),
+            border: getBorderColor({{ floor }})
+          }
+        }
+      },
       {% endfor %}
-    ]);
+    },
+    interaction: {
+      zoomView: true,
+      dragView: true,
+      dragNodes: false,
+      hover: true
+    }
+  };
 
-    const salaEdges = new vis.DataSet([
-      {% for from_room, to_room in connections %}
-        { from: "{{ from_room }}", to: "{{ to_room }}" },
-      {% endfor %}
-    ]);
-
-    const salaData = { nodes: salaNodes, edges: salaEdges };
-    const salaOptions = {
-      nodes: { shape: 'dot', size: 20, font: { size: 16 }, borderWidth: 2 },
-      edges: { arrows: 'to' },
-      physics: { enabled: true, stabilization: { iterations: 500 } }
+  function getFloorColor(floorNumber) {
+    const colors = {
+      0: '#9b59b6',  // Morado para planta baja
+      1: '#3498db',  // Azul para primera planta
+      2: '#f39c12',  // Naranja para segunda planta
+      3: '#2ecc71',  // Verde para tercera planta
     };
+    return colors[floorNumber] || '#95a5a6'; // Gris por defecto
+  }
 
-    const salaContainer = document.getElementById('graph-container-salas');
-    const salaNetwork = new vis.Network(salaContainer, salaData, salaOptions);
+  function getFloorHighlightColor(floorNumber) {
+    const colors = {
+      0: '#ae7ac5',  // Morado más claro
+      1: '#5dade2',  // Azul más claro
+      2: '#f5b041',  // Naranja más claro
+      3: '#58d68d',  // Verde más claro
+    };
+    return colors[floorNumber] || '#b2bec3'; // Gris claro por defecto
+  }
 
-    // ========= GRAFO SECUNDARIO: OBRAS =========
-    const obraContainer = document.getElementById('graph-container-obras');
-    const obraTitle = document.getElementById('obra-title');
-    const salaNombreSpan = document.getElementById('sala-nombre');
+  function getBorderColor(floorNumber) {
+    const colors = {
+      0: '#8e44ad',  // Morado más oscuro
+      1: '#2980b9',  // Azul más oscuro
+      2: '#d35400',  // Naranja más oscuro
+      3: '#27ae60',  // Verde más oscuro
+    };
+    return colors[floorNumber] || '#7f8c8d'; // Gris oscuro por defecto
+  }
 
-    salaNetwork.on("click", function (params) {
-      if (params.nodes.length > 0) {
-        const sala = params.nodes[0];
-        salaNombreSpan.textContent = sala;
-        obraTitle.style.display = "block";
-        obraContainer.style.display = "block";
+  const salaContainer = document.getElementById('graph-container-salas');
+  const salaNetwork = new vis.Network(salaContainer, salaData, salaOptions);
+  
+  // Personalizar la renderización de nodos
+  salaNetwork.on("afterDrawing", function(ctx) {
+    const nodePositions = salaNetwork.getPositions();
+    const scale = salaNetwork.getScale();
+    
+    // Procesar nodos
+    for (const nodeId in nodePositions) {
+      if (!nodePositions.hasOwnProperty(nodeId)) continue;
+      
+      const node = salaNodes.get(nodeId);
+      const position = nodePositions[nodeId];
+      
+      // Obtener dimensiones del nodo
+      const nodeObj = salaNetwork.body.nodes[nodeId];
+      if (!nodeObj) continue;
+      
+      const width = nodeObj.shape.width;
+      const height = nodeObj.shape.height;
+      
+      // Dibujar el contenido personalizado
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      
+      // Título de la sala - grande y en negrita
+      ctx.font = "bold 18px Montserrat";
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillText(node.roomName, position.x, position.y - 15);
+      
+      // Tiempo de visita - un poco más pequeño
+      ctx.font = "16px Montserrat";
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillText(node.roomTime + " min", position.x, position.y + 15);
+      
+      // Dibujar iconos de entrada/salida
+      if (node.isEntrance) {
+        // Dibujar círculo verde para representar entrada
+        ctx.beginPath();
+        ctx.arc(position.x - width/2 - 15, position.y, 15, 0, 2 * Math.PI);
+        ctx.fillStyle = "#27ae60"; // Verde para entrada
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Dibujar símbolo de entrada (flecha entrando)
+        ctx.beginPath();
+        ctx.moveTo(position.x - width/2 - 22, position.y);
+        ctx.lineTo(position.x - width/2 - 8, position.y);
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Punta de flecha
+        ctx.beginPath();
+        ctx.moveTo(position.x - width/2 - 12, position.y - 5);
+        ctx.lineTo(position.x - width/2 - 8, position.y);
+        ctx.lineTo(position.x - width/2 - 12, position.y + 5);
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+      }
+      
+      if (node.isExit) {
+        // Dibujar círculo rojo para representar salida
+        ctx.beginPath();
+        ctx.arc(position.x + width/2 + 15, position.y, 15, 0, 2 * Math.PI);
+        ctx.fillStyle = "#c0392b"; // Rojo para salida
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Dibujar símbolo de salida (flecha saliendo)
+        ctx.beginPath();
+        ctx.moveTo(position.x + width/2 + 8, position.y);
+        ctx.lineTo(position.x + width/2 + 22, position.y);
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Punta de flecha
+        ctx.beginPath();
+        ctx.moveTo(position.x + width/2 + 18, position.y - 5);
+        ctx.lineTo(position.x + width/2 + 22, position.y);
+        ctx.lineTo(position.x + width/2 + 18, position.y + 5);
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+      }
+    }
+  });
 
-        fetch(`/museos/obras-por-sala/${encodeURIComponent(sala)}/`)
-          .then(res => res.json())
-          .then(data => {
-            const nodes = new vis.DataSet(data.nodes);
-            const edges = new vis.DataSet(data.edges);
-            const container = document.getElementById('graph-container-obras');
-            const network = new vis.Network(container, { nodes, edges }, {
-              nodes: {
-                shape: 'box',
-                size: 20,
-                font: { size: 14, color: '#000' }
-              },
-              edges: {
-                arrows: 'to',
-                smooth: true
-              },
-              physics: {
-                enabled: true,
-                stabilization: { iterations: 300 }
-              },
-              groups: {
-                artwork: { color: { background: '#ffd966' } },
-                movement: { color: { background: '#a4c2f4' } }
-              }
-            });
-          });
+  // Ajustar el zoom para ver todo el grafo
+  salaNetwork.once("afterDrawing", function() {
+    salaNetwork.fit({
+      animation: {
+        duration: 1000,
+        easingFunction: "easeInOutQuad"
       }
     });
-  </script>
+  });
+
+  // Hacer que los nodos sean clickeables
+  salaNetwork.on("click", function(params) {
+    if (params.nodes.length > 0) {
+      const nodeId = params.nodes[0];
+      const node = salaNodes.get(nodeId);
+      if (node) {
+        console.log("Navegando a sala:", node.roomName);
+        // Redirigir a la página de obras de la sala usando el nombre
+        window.location.href = `${window.location.pathname}sala/${encodeURIComponent(node.roomName)}/`;
+      } else {
+        console.error("Error: No se encontró el nodo:", nodeId);
+      }
+    }
+  });
+
+  // Cambiar el cursor cuando se pasa sobre un nodo
+  salaNetwork.on("hoverNode", function() {
+    document.getElementById('graph-container-salas').style.cursor = 'pointer';
+  });
+
+  salaNetwork.on("blurNode", function() {
+    document.getElementById('graph-container-salas').style.cursor = 'default';
+  });
+</script>
+
+<style>
+  .time-badge {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.15);
+  }
+  
+  /* Estilos para la leyenda */
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 1rem;
+  }
+  
+  .legend-item i {
+    width: 28px;
+    margin-right: 12px;
+    font-size: 1.4rem;
+    text-align: center;
+  }
+  
+  /* Iconos de puerta para la leyenda (círculos como en el mapa) */
+  .door-indicator {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  
+  .entrance {
+    background-color: #27ae60; /* Verde para entrada - igual que en el mapa */
+    position: relative;
+  }
+  
+  .entrance::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-left: 3px solid white;
+    border-bottom: 3px solid white;
+    transform: rotate(45deg);
+    left: 9px;
+  }
+  
+  .exit {
+    background-color: #c0392b; /* Rojo para salida - igual que en el mapa */
+    position: relative;
+  }
+  
+  .exit::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-right: 3px solid white;
+    border-top: 3px solid white;
+    transform: rotate(45deg);
+    right: 9px;
+  }
+  
+  /* Estilos para la leyenda de pisos */
+  .floors-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .floor-item {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+  }
+  
+  .floor-indicator {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    margin-right: 15px;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+    font-size: 1.1rem;
+  }
+  
+  .floor-0 { background-color: #9b59b6; } /* Morado para planta baja */
+  .floor-1 { background-color: #3498db; } /* Azul para primera planta */
+  .floor-2 { background-color: #f39c12; } /* Naranja para segunda planta */
+  .floor-3 { background-color: #2ecc71; } /* Verde para tercera planta */
+  
+  /* Añadir sombra sutil a la tarjeta principal */
+  .card {
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15) !important;
+    border: none;
+    border-radius: 10px;
+  }
+  
+  /* Mejorar el contenedor del grafo */
+  #graph-container-salas {
+    border-radius: 10px !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.08);
+  }
+  
+  /* Estilos para títulos y etiquetas mejorados */
+  .card-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #444;
+  }
+</style>
 {% endblock %}
