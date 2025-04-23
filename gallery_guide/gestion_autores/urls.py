@@ -4,6 +4,6 @@ from . import views
 
 urlpatterns = [
     path('', views.lista_autores, name='lista_autores'),
-    path('<str:author_name>/obras/', views.obras_autor, name='obras_autor'),
-    path('api/obras-autor/<str:author_name>/', views.api_obras_autor, name='api_obras_autor'),
+    path('<slug:author_slug>/obras/', views.obras_autor, name='obras_autor'),
+    path('api/obras-autor/<slug:author_slug>/', views.api_obras_autor, name='api_obras_autor'),
 ]

@@ -23,6 +23,7 @@ def create_movements():
     for name, desc, start, end, origin in movement_data:
         movements[name] = Movement(
             name=name,
+            slug=slugify(name),  # Añadimos slug
             description=desc,
             start_year=start,
             end_year=end,
@@ -71,6 +72,7 @@ def create_artists(movements):
             imagen=""
         a = Artist(
             name=name,
+            slug=slugify(name),  # Añadimos slug
             bio=bio,
             birth_date=birth,
             death_date=death,

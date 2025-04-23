@@ -42,7 +42,7 @@
                     {% endif %}
                 </div>
                 <div class="card-footer bg-white border-0">
-                    <a href="/autores/{{ artista.name }}/obras/" class="btn btn-primary btn-sm w-100">Ver obras</a>
+                    <a href="{% url 'obras_autor' artista.slug %}" class="btn btn-primary btn-sm w-100">Ver obras</a>
                 </div>
             </div>
         </div>

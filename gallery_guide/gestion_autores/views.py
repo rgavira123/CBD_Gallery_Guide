@@ -7,25 +7,24 @@ def lista_autores(request):
     artistas = Artist.nodes.all()
     return render(request, 'lista_autores.html', {'artistas': artistas})
 
-def obras_autor(request, author_name):
+def obras_autor(request, author_slug):
     """Vista para mostrar la página con el grafo de obras del autor"""
     try:
-        # Obtener el artista usando Neomodel en lugar de get_object_or_404
-        author = Artist.nodes.get(name=author_name)
+        # Obtener el artista usando el slug
+        author = Artist.nodes.get(slug=author_slug)
         museums = Museum.nodes.all()
         return render(request, 'obras_autor.html', {
             'author': author,
             'museums': museums
         })
     except Artist.DoesNotExist:
-        # Manejo manual del caso cuando el artista no existe
-        raise Http404(f"No se encontró el artista '{author_name}'")
+        raise Http404(f"No se encontró el artista con slug '{author_slug}'")
 
-def api_obras_autor(request, author_name):
+def api_obras_autor(request, author_slug):
     """API que devuelve los datos para generar el grafo de obras del autor"""
     try:
-        # Obtener el artista
-        artist = Artist.nodes.get(name=author_name)
+        # Obtener el artista usando el slug
+        artist = Artist.nodes.get(slug=author_slug)
         
         # Obtener filtros opcionales
         museum_filter = request.GET.get('museum', None)
@@ -65,7 +64,7 @@ def api_obras_autor(request, author_name):
                 tooltip += f"\n{artwork.description}"
             
             nodes.append({
-                'id': f"artwork_{artwork.title}",
+                'id': f"artwork_{artwork.slug}",
                 'label': artwork.title,
                 'title': tooltip,
                 'group': 'artwork'
@@ -73,10 +72,8 @@ def api_obras_autor(request, author_name):
             
             # Conectar obra con su movimiento
             for movement in artwork.movement.all():
-                # Verificar si el nodo del movimiento ya existe
-                movement_id = f"movement_{movement.name}"
+                movement_id = f"movement_{movement.slug}"
                 if not any(node['id'] == movement_id for node in nodes):
-                    # Solo texto plano para tooltip
                     movement_tooltip = f"{movement.name}"
                     if movement.description:
                         movement_tooltip += f"\n{movement.description}"
@@ -89,7 +86,7 @@ def api_obras_autor(request, author_name):
                     })
                 
                 edges.append({
-                    'from': f"artwork_{artwork.title}",
+                    'from': f"artwork_{artwork.slug}",
                     'to': movement_id,
                     'arrows': 'to',
                     'title': 'Pertenece a'
@@ -104,11 +101,10 @@ def api_obras_autor(request, author_name):
                     if museum_filter and museum.name != museum_filter:
                         continue
                         
-                    museum_id = f"museum_{museum.name}"
+                    museum_id = f"museum_{museum.slug}"
                     
                     # Solo añadir museo si no lo hemos añadido antes
                     if museum_id not in museums_added:
-                        # Solo texto plano para tooltip
                         museum_tooltip = f"{museum.name}"
                         if museum.location:
                             museum_tooltip += f"\nUbicación: {museum.location}"
@@ -124,7 +120,7 @@ def api_obras_autor(request, author_name):
                     
                     # Conectar obra directamente con museo
                     edges.append({
-                        'from': f"artwork_{artwork.title}",
+                        'from': f"artwork_{artwork.slug}",
                         'to': museum_id,
                         'arrows': 'to',
                         'title': 'Exhibida en'
@@ -136,6 +132,6 @@ def api_obras_autor(request, author_name):
         })
     
     except Artist.DoesNotExist:
-        return JsonResponse({'error': 'Artista no encontrado'}, status=404)
+        return JsonResponse({'error': f'Artista con slug {author_slug} no encontrado'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

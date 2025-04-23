@@ -75,7 +75,8 @@ class Artwork(StructuredNode):
 
 class Artist(StructuredNode):
     name = StringProperty(unique_index=True, required=True)
-    image = StringProperty()  # Esto debería contener solo el nombre del archivo, no la ruta completa
+    slug = StringProperty(unique_index=True)  # Añadimos slug
+    image = StringProperty()
     bio = StringProperty(default="")
     birth_date = StringProperty()
     death_date = StringProperty()
@@ -84,7 +85,14 @@ class Artist(StructuredNode):
     artworks = RelationshipFrom('Artwork', 'CREATED_BY')
     movements = RelationshipTo('Movement', 'PART_OF')
 
-    # Puedes añadir este método para obtener la URL completa si es necesario
+    def save(self, *args, **kwargs):
+        # Genera el slug automáticamente basado en el nombre
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+        return self
+
+    # Método para obtener la URL completa de la imagen
     def get_image_url(self):
         if self.image:
             return f"images/autores/{self.image}"
@@ -92,6 +100,7 @@ class Artist(StructuredNode):
 
 class Movement(StructuredNode):
     name = StringProperty(unique_index=True, required=True)
+    slug = StringProperty(unique_index=True)  # Añadimos slug
     description = StringProperty(default="")
     start_year = StringProperty()
     end_year = StringProperty()
@@ -100,3 +109,10 @@ class Movement(StructuredNode):
     # Relaciones
     artworks = RelationshipFrom('Artwork', 'BELONGS_TO')
     artists = RelationshipFrom('Artist', 'PART_OF')
+    
+    def save(self, *args, **kwargs):
+        # Genera el slug automáticamente basado en el nombre
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+        return self

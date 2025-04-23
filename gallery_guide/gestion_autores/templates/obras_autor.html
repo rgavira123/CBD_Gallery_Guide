@@ -8,116 +8,111 @@
 {% block content %}
 <div class="container-fluid py-5">
     <div class="row mb-4">
-        <div class="col-lg-8 mx-auto text-center">
-            <h1 class="mb-3">Obras de {{ author.name }}</h1>
-            <p class="lead text-muted">Explora la relación entre las obras, movimientos artísticos y museos donde se exhiben</p>
+        <div class="col-lg-10 mx-auto">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lista_autores' %}">Artistas</a></li>
+                    <li class="breadcrumb-item active">{{ author.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-3">{{ author.name }}</h1>
         </div>
     </div>
 
-    <!-- Sección de filtros -->
-    <div class="row mb-4">
-        <div class="col-md-6 col-lg-4 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Filtros</h5>
-                    <form id="filter-form" class="mt-3">
-                        <div class="mb-3">
-                            <label for="museum-filter" class="form-label">Museo</label>
-                            <select class="form-select" id="museum-filter">
-                                <option value="">Todos los museos</option>
-                                {% for museum in museums %}
-                                <option value="{{ museum.name }}">{{ museum.name }}</option>
-                                {% endfor %}
-                            </select>
+    <div class="row">
+        <!-- Columna izquierda: Biografía del artista -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        {% if author.image %}
+                        <!-- Imagen circular del autor -->
+                        <div class="avatar-container mx-auto mb-3">
+                            <img src="{% static 'images/autores/' %}{{ author.image|cut:'images/autores/' }}" 
+                                 alt="{{ author.name }}" 
+                                 class="img-fluid rounded-circle artist-avatar"
+                                 style="width: 180px; height: 180px; object-fit: cover; border: 5px solid #f8f9fa;">
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Aplicar filtros</button>
+                        {% else %}
+                        <div class="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" 
+                             style="width: 180px; height: 180px; border: 5px solid #f8f9fa;">
+                            <i class="fas fa-user-circle fa-5x text-muted"></i>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Información del artista -->
-    <div class="row mb-4">
-        <div class="col-md-10 mx-auto">
-            <div class="card shadow-sm artist-profile-card">
-                <div class="card-body p-5">
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-md-4 text-center mb-4 mb-md-0">
-                            {% if author.image %}
-                            <!-- Imagen circular más grande del autor -->
-                            <div class="avatar-container mx-auto">
-                                <img src="{% static 'images/autores/' %}{{ author.image|cut:'images/autores/' }}" 
-                                     alt="{{ author.name }}" 
-                                     class="img-fluid rounded-circle artist-avatar"
-                                     style="width: 220px; height: 220px; object-fit: cover; border: 5px solid #f8f9fa;">
-                            </div>
-                            {% else %}
-                            <div class="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center" 
-                                 style="width: 220px; height: 220px; border: 5px solid #f8f9fa;">
-                                <i class="fas fa-user-circle fa-5x text-muted"></i>
-                            </div>
-                            {% endif %}
+                        {% endif %}
+                        <h2 class="h3 mb-1">{{ author.name }}</h2>
+                        <p class="text-muted">
+                            {{ author.nationality }} ({{ author.birth_date }} - {% if author.death_date %}{{ author.death_date }}{% else %}Presente{% endif %})
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h3 class="h5 mb-3">Biografía</h3>
+                        <p>{{ author.bio }}</p>
+                    </div>
+                    
+                    {% if author.movements.all %}
+                    <div class="mb-4">
+                        <h3 class="h5 mb-3">Movimientos</h3>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for movement in author.movements.all %}
+                            <span class="badge bg-light text-dark p-2">{{ movement.name }}</span>
+                            {% endfor %}
                         </div>
-                        <div class="col-md-7 artist-info-container">
-                            <h3 class="mb-3 text-md-start">{{ author.name }}</h3>
-                            <p class="text-muted mb-3">
-                                <i class="fas fa-globe-americas me-2"></i>{{ author.nationality }} | 
-                                <i class="fas fa-birthday-cake ms-2 me-2"></i>{{ author.birth_date }} - 
-                                {% if author.death_date %}{{ author.death_date }}{% else %}Presente{% endif %}
-                            </p>
-                            <p class="mb-3">{{ author.bio }}</p>
-                            
-                            {% if author.movements.all %}
-                            <div>
-                                <strong><i class="fas fa-paint-brush me-2"></i>Movimientos:</strong>
-                                <div class="mt-2">
-                                    {% for movement in author.movements.all %}
-                                    <span class="badge bg-light text-dark me-2 mb-2 p-2">{{ movement.name }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Filtros -->
+                    <div class="mt-4">
+                        <h3 class="h5 mb-3">Filtrar obras por museo</h3>
+                        <form id="filter-form">
+                            <div class="mb-3">
+                                <select class="form-select" id="museum-filter">
+                                    <option value="">Todos los museos</option>
+                                    {% for museum in museums %}
+                                    <option value="{{ museum.name }}">{{ museum.name }}</option>
                                     {% endfor %}
-                                </div>
+                                </select>
                             </div>
-                            {% endif %}
-                        </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Aplicar filtro</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Grafo de obras -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h4 class="card-title mb-3">Grafo de obras y relaciones</h4>
-                    <div id="graph-container" style="height: 600px; border: 1px solid #eee;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Leyenda del grafo -->
-    <div class="row mt-4">
-        <div class="col-md-8 col-lg-6 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Leyenda</h5>
-                    <div class="d-flex flex-wrap justify-content-center gap-3">
-                        <div class="d-flex align-items-center">
-                            <span class="me-2" style="width: 20px; height: 20px; background-color: #e67e6c; border-radius: 50%; display: inline-block;"></span>
-                            <span>Obra</span>
+        
+        <!-- Columna derecha: Grafo de obras -->
+        <div class="col-lg-8">
+            <div class="card shadow h-100">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3">Obras y sus relaciones</h2>
+                    
+                    <!-- Leyenda del grafo (ahora arriba del grafo) -->
+                    <div class="legend-container mb-3 p-3 bg-light rounded">
+                        <h3 class="h6 mb-2">Leyenda</h3>
+                        <div class="d-flex flex-wrap gap-4">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2" style="width: 15px; height: 15px; background-color: #e67e6c; border-radius: 50%; display: inline-block;"></span>
+                                <span>Obra</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2" style="width: 15px; height: 15px; background-color: #5d9cec; border-radius: 50%; display: inline-block;"></span>
+                                <span>Movimiento</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2" style="width: 15px; height: 15px; background-color: #4fc1e9; border-radius: 50%; display: inline-block;"></span>
+                                <span>Museo</span>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <span class="me-2" style="width: 20px; height: 20px; background-color: #5d9cec; border-radius: 50%; display: inline-block;"></span>
-                            <span>Movimiento</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <span class="me-2" style="width: 20px; height: 20px; background-color: #4fc1e9; border-radius: 50%; display: inline-block;"></span>
-                            <span>Museo</span>
-                        </div>
+                    </div>
+                    
+                    <!-- Contenedor del grafo -->
+                    <div id="graph-container" style="height: 600px; border: 1px solid #eee; border-radius: 8px;"></div>
+                    
+                    <div class="mt-3 text-center text-muted">
+                        <small>Haz clic en los elementos del grafo para más información</small>
                     </div>
                 </div>
             </div>
@@ -206,7 +201,7 @@
         
         // Función para cargar los datos del grafo
         function loadGraphData(museumFilter = '') {
-            let url = `/autores/api/obras-autor/{{ author.name }}/`;
+            let url = `/autores/api/obras-autor/{{ author.slug }}/`;
             if (museumFilter) {
                 url += `?museum=${encodeURIComponent(museumFilter)}`;
             }
@@ -242,6 +237,7 @@
                             const nodeId = params.nodes[0];
                             const node = nodes.get(nodeId);
                             console.log('Clicked node:', node);
+                            // Aquí podrías mostrar información adicional del nodo en un modal o panel
                         }
                     });
                 })
@@ -261,16 +257,34 @@
     });
 </script>
 
-<!-- Call to Action -->
-<section class="cta-section text-white text-center mt-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <h2 class="mb-4">Descubre más artistas y sus obras</h2>
-                <p class="lead mb-4">Explora nuestra colección de más de 25 artistas influyentes y sus obras maestras</p>
-                <a href="/autores/" class="btn btn-light text-dark">Volver a Artistas</a>
-            </div>
-        </div>
-    </div>
-</section>
+<style>
+    /* Estilos mejorados para la ficha del artista */
+    .artist-avatar {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .artist-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    /* Mejoras para la leyenda */
+    .legend-container {
+        border: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Mejoras para el contenedor del grafo */
+    #graph-container {
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    #graph-container:hover {
+        box-shadow: inset 0 0 15px rgba(0,0,0,0.08);
+    }
+</style>
+
+<!-- Eliminamos la sección CTA que ya no es necesaria -->
 {% endblock content %}
