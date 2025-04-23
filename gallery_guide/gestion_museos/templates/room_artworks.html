@@ -1,0 +1,495 @@
+<!-- filepath: c:\Users\ramon\trabajo_cbd\gallery_guide\gestion_museos\templates\room_artworks.html -->
+{% extends 'base.html' %}
+{% block title %}<title>{{ room.name }} | Gallery Guide</title>{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Encabezado con información de la sala -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'listar_museos' %}">Museos</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'museum_graph' museum.slug %}">{{ museum.name }}</a></li>
+          <li class="breadcrumb-item active">{{ room.name }}</li>
+        </ol>
+      </nav>
+      <h1 class="mb-1 mt-2">{{ room.name }}</h1>
+      <p class="text-muted mb-0">{{ room.theme }}</p>
+    </div>
+    <div class="badge-container">
+      <div class="time-badge">
+        <i class="far fa-clock me-1"></i>
+        <span>Tiempo estimado: {{ room.tiempo_visita }} min</span>
+      </div>
+      <div class="floor-badge ms-2">
+        <i class="fas fa-layer-group me-1"></i>
+        <span>Planta {{ room.floor }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor principal con dos columnas -->
+  <div class="row">
+    <!-- Columna izquierda: Lista de obras -->
+    <div class="col-lg-7 mb-4">
+      <div class="card shadow h-100">
+        <div class="card-header bg-white py-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Obras en exhibición</h2>
+            <span class="badge bg-secondary">{{ artworks|length }} obras</span>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="artwork-list">
+            {% for artwork in artworks %}
+            <div class="artwork-card {% if selected_artwork and selected_artwork.slug == artwork.slug %}active{% endif %}" 
+                data-id="{{ artwork.slug }}"
+                onclick="selectArtwork('{{ artwork.slug }}')">
+              <div class="artwork-image">
+                {% if artwork.image %}
+                <img src="data:image/jpeg;base64,{{ artwork.image }}" alt="{{ artwork.title }}">
+                {% else %}
+                <div class="placeholder-image">
+                  <i class="fas fa-image"></i>
+                </div>
+                {% endif %}
+                {% if artwork.masterpiece %}
+                <span class="masterpiece-badge" title="Obra Maestra">
+                  <i class="fas fa-star"></i>
+                </span>
+                {% endif %}
+              </div>
+              <div class="artwork-info">
+                <h3 class="artwork-title">{{ artwork.title }}</h3>
+                <p class="artwork-artist">{{ artwork.artist.all.0.name }}</p>
+                <div class="artwork-meta">
+                  <span class="artwork-year">{{ artwork.year }}</span>
+                  <span class="artwork-rating">
+                    {% for i in "12345"|make_list %}
+                    <i class="{% if forloop.counter <= artwork.rating %}fas{% else %}far{% endif %} fa-star"></i>
+                    {% endfor %}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="empty-state p-4 text-center">
+              <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+              <h3 class="h5">No hay obras en esta sala</h3>
+              <p class="text-muted">Esta sala no tiene obras de arte asignadas actualmente.</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Columna derecha: Ficha técnica -->
+    <div class="col-lg-5">
+      <div class="card shadow h-100">
+        <div class="card-header bg-white py-3">
+          <h2 class="h5 mb-0">Ficha técnica</h2>
+        </div>
+        <div class="card-body" id="artwork-detail">
+          {% if selected_artwork %}
+          <div class="detail-content">
+            <!-- Imagen de la obra -->
+            <div class="detail-image-container mb-4">
+              {% if selected_artwork.image %}
+              <img src="data:image/jpeg;base64,{{ selected_artwork.image }}" alt="{{ selected_artwork.title }}" class="detail-image">
+              {% else %}
+              <div class="detail-placeholder-image">
+                <i class="fas fa-image fa-3x"></i>
+              </div>
+              {% endif %}
+              {% if selected_artwork.masterpiece %}
+              <div class="masterpiece-ribbon">
+                <span>Obra Maestra</span>
+              </div>
+              {% endif %}
+            </div>
+            
+            <!-- Información principal -->
+            <h3 class="detail-title">{{ selected_artwork.title }}</h3>
+            <div class="detail-artist mb-3">
+              <a href="#" class="artist-link">
+                <i class="fas fa-user-circle me-1"></i>
+                {{ selected_artwork.artist.all.0.name }}
+              </a>
+              <span class="detail-year">({{ selected_artwork.year }})</span>
+            </div>
+            
+            <!-- Calificación -->
+            <div class="detail-rating mb-3">
+              {% for i in "12345"|make_list %}
+              <i class="{% if forloop.counter <= selected_artwork.rating %}fas{% else %}far{% endif %} fa-star"></i>
+              {% endfor %}
+            </div>
+            
+            <!-- Descripción -->
+            <div class="detail-description mb-3">
+              <h4 class="detail-subtitle">Descripción</h4>
+              <p>{{ selected_artwork.description|default:"Sin descripción disponible." }}</p>
+            </div>
+            
+            <!-- Especificaciones técnicas -->
+            <div class="detail-specs">
+              <h4 class="detail-subtitle">Especificaciones</h4>
+              <ul class="specs-list">
+                <li>
+                  <span class="specs-label">Movimiento:</span>
+                  <a href="#" class="movement-link">
+                    {{ selected_artwork.movement.all.0.name|default:"No especificado" }}
+                  </a>
+                </li>
+                <li>
+                  <span class="specs-label">Técnica:</span>
+                  <span>{{ selected_artwork.medium|default:"No especificado" }}</span>
+                </li>
+                <li>
+                  <span class="specs-label">Dimensiones:</span>
+                  <span>{{ selected_artwork.dimensions|default:"No especificado" }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          {% else %}
+          <div class="empty-detail text-center py-5">
+            <i class="fas fa-image fa-4x text-muted mb-3"></i>
+            <h3 class="h5">Selecciona una obra</h3>
+            <p class="text-muted">Haz clic en una obra del listado para ver su información detallada.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript para actualizar la ficha técnica via AJAX -->
+<script>
+  function selectArtwork(artworkSlug) {
+    // Actualizar clases activas
+    document.querySelectorAll('.artwork-card').forEach(card => {
+      card.classList.remove('active');
+    });
+    document.querySelector(`.artwork-card[data-id="${artworkSlug}"]`).classList.add('active');
+    
+    // Realizar solicitud AJAX para cargar detalles
+    fetch(`/museos/artwork/${artworkSlug}/`)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('artwork-detail').innerHTML = renderArtworkDetail(data);
+      })
+      .catch(error => console.error('Error:', error));
+  }
+  
+  function renderArtworkDetail(artwork) {
+    const masterpiece = artwork.masterpiece ? 
+      `<div class="masterpiece-ribbon"><span>Obra Maestra</span></div>` : '';
+    
+    const image = artwork.image ?
+      `<img src="data:image/jpeg;base64,${artwork.image}" alt="${artwork.title}" class="detail-image">` :
+      `<div class="detail-placeholder-image"><i class="fas fa-image fa-3x"></i></div>`;
+    
+    const stars = Array(5).fill(0).map((_, i) => 
+      `<i class="${i < artwork.rating ? 'fas' : 'far'} fa-star"></i>`
+    ).join('');
+    
+    return `
+      <div class="detail-content">
+        <div class="detail-image-container mb-4">
+          ${image}
+          ${masterpiece}
+        </div>
+        
+        <h3 class="detail-title">${artwork.title}</h3>
+        <div class="detail-artist mb-3">
+          <a href="#" class="artist-link">
+            <i class="fas fa-user-circle me-1"></i>
+            ${artwork.artist_name}
+          </a>
+          <span class="detail-year">(${artwork.year})</span>
+        </div>
+        
+        <div class="detail-rating mb-3">
+          ${stars}
+        </div>
+        
+        <div class="detail-description mb-3">
+          <h4 class="detail-subtitle">Descripción</h4>
+          <p>${artwork.description || "Sin descripción disponible."}</p>
+        </div>
+        
+        <div class="detail-specs">
+          <h4 class="detail-subtitle">Especificaciones</h4>
+          <ul class="specs-list">
+            <li>
+              <span class="specs-label">Movimiento:</span>
+              <a href="#" class="movement-link">
+                ${artwork.movement_name || "No especificado"}
+              </a>
+            </li>
+            <li>
+              <span class="specs-label">Técnica:</span>
+              <span>${artwork.medium || "No especificado"}</span>
+            </li>
+            <li>
+              <span class="specs-label">Dimensiones:</span>
+              <span>${artwork.dimensions || "No especificado"}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Seleccionar la primera obra automáticamente si existe
+  document.addEventListener('DOMContentLoaded', function() {
+    const firstArtwork = document.querySelector('.artwork-card');
+    if (firstArtwork) {
+      firstArtwork.click();
+    }
+  });
+</script>
+
+<style>
+  /* Estilos para el encabezado */
+  .badge-container {
+    display: flex;
+  }
+  
+  .time-badge, .floor-badge {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .floor-badge {
+    background-color: #3498db;
+  }
+  
+  /* Estilos para la lista de obras */
+  .artwork-list {
+    max-height: 700px;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+  
+  .artwork-card {
+    display: flex;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    background-color: white;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .artwork-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+  }
+  
+  .artwork-card.active {
+    border-left: 4px solid var(--primary);
+    background-color: rgba(210, 87, 69, 0.05);
+  }
+  
+  .artwork-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-right: 1rem;
+    position: relative;
+    border: 1px solid #eee;
+  }
+  
+  .artwork-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .placeholder-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #adb5bd;
+  }
+  
+  .masterpiece-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: gold;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+  }
+  
+  .artwork-info {
+    flex: 1;
+  }
+  
+  .artwork-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .artwork-artist {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+  }
+  
+  .artwork-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #777;
+  }
+  
+  .artwork-year {
+    font-style: italic;
+  }
+  
+  .artwork-rating i {
+    color: gold;
+    font-size: 0.8rem;
+  }
+  
+  /* Estilos para la ficha técnica */
+  .detail-content {
+    padding: 1rem 0;
+  }
+  
+  .detail-image-container {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .detail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: #f8f9fa;
+  }
+  
+  .detail-placeholder-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #adb5bd;
+  }
+  
+  .masterpiece-ribbon {
+    position: absolute;
+    top: 20px;
+    right: -35px;
+    background-color: gold;
+    color: #333;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 0.25rem 2rem;
+    transform: rotate(45deg);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    width: 150px;
+    text-align: center;
+  }
+  
+  .detail-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .detail-artist {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .artist-link, .movement-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .artist-link:hover, .movement-link:hover {
+    text-decoration: underline;
+  }
+  
+  .detail-year {
+    color: #777;
+    font-style: italic;
+    margin-left: 0.5rem;
+  }
+  
+  .detail-rating {
+    margin-bottom: 1rem;
+  }
+  
+  .detail-rating i {
+    color: gold;
+    font-size: 1.2rem;
+    margin-right: 0.2rem;
+  }
+  
+  .detail-subtitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #444;
+  }
+  
+  .specs-list {
+    list-style: none;
+    padding-left: 0;
+  }
+  
+  .specs-list li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .specs-label {
+    font-weight: 500;
+    min-width: 100px;
+    display: inline-block;
+  }
+  
+  /* Estilos para estados vacíos */
+  .empty-state, .empty-detail {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+  }
+</style>
+{% endblock %}
