@@ -43,9 +43,9 @@
         <div class="card-body p-0">
           <div class="artwork-list">
             {% for artwork in artworks %}
-            <div class="artwork-card {% if selected_artwork and selected_artwork.element_id == artwork.element_id %}active{% endif %}" 
-                data-id="{{ artwork.element_id }}"
-                onclick="selectArtwork('{{ artwork.element_id }}')">
+            <div class="artwork-card {% if selected_artwork and selected_artwork.slug == artwork.slug %}active{% endif %}" 
+                data-id="{{ artwork.slug }}"
+                onclick="selectArtwork('{{ artwork.slug }}')">
               <div class="artwork-image">
                 {% if artwork.image %}
                 <img src="data:image/jpeg;base64,{{ artwork.image }}" alt="{{ artwork.title }}">
@@ -169,15 +169,15 @@
 
 <!-- JavaScript para actualizar la ficha técnica via AJAX -->
 <script>
-  function selectArtwork(artworkId) {
+  function selectArtwork(artworkSlug) {
     // Actualizar clases activas
     document.querySelectorAll('.artwork-card').forEach(card => {
       card.classList.remove('active');
     });
-    document.querySelector(`.artwork-card[data-id="${artworkId}"]`).classList.add('active');
+    document.querySelector(`.artwork-card[data-id="${artworkSlug}"]`).classList.add('active');
     
     // Realizar solicitud AJAX para cargar detalles
-    fetch(`/museos/artwork/${artworkId}/`)
+    fetch(`/museos/artwork/${artworkSlug}/`)
       .then(response => response.json())
       .then(data => {
         document.getElementById('artwork-detail').innerHTML = renderArtworkDetail(data);
@@ -410,15 +410,17 @@
   
   .masterpiece-ribbon {
     position: absolute;
-    top: 10px;
-    right: -30px;
+    top: 20px;
+    right: -35px;
     background-color: gold;
     color: #333;
     font-size: 0.8rem;
     font-weight: bold;
-    padding: 0.25rem 2.5rem;
+    padding: 0.25rem 2rem;
     transform: rotate(45deg);
     box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    width: 150px;
+    text-align: center;
   }
   
   .detail-title {

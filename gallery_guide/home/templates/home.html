@@ -1,312 +1,122 @@
 {% extends 'base.html' %}
-{% load time_utils %}
+{% load static %}
 
-{% block title %}<title>{{ museum.name }} | Gallery Guide</title>{% endblock %}
+{% block title %}
+<title>Gallery Guide - Tu guía de arte y museos</title>
+{% endblock title %}
 
 {% block content %}
-<div class="container py-5">
-  <div class="row">
-    <div class="col-md-12">
-      <div class="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-          <h1 class="mb-2">{{ museum.name }}</h1>
-          <p class="text-muted mb-0">{{ museum.location }}</p>
-        </div>
-        <div class="text-end">
-          <div class="time-badge">
-            <i class="far fa-clock me-1"></i>
-            <span>Tiempo total: 
-              {% if tiempo_total > 60 %}
-                {{ tiempo_total|divisibleby:"60"|yesno:""|add:tiempo_total|intdiv:60 }} h
-                {% if tiempo_total|modulo:60 != 0 %} 
-                  {{ tiempo_total|modulo:60 }} m
-                {% endif %}
-              {% else %}
-                {{ tiempo_total }} m
-              {% endif %}
-            </span>
+<main>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+          <div class="logo-container">
+            <img src="{% static 'images/logo-nofondo.png' %}" alt="Gallery Guide Logo" class="img-fluid">
           </div>
+          <h1>Bienvenido a Gallery Guide</h1>
+          <p class="lead mb-4">
+            Descubre los mejores museos, crea rutas personalizadas y vive experiencias artísticas únicas.
+            Gallery Guide te conecta con el arte y la cultura de manera sencilla e intuitiva.
+          </p>
+          <a href="/museos/" class="btn btn-primary btn-lg">Explora Museos</a>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="card mb-5 shadow">
-    <div class="card-body">
+  <!-- Features Section -->
+  <section class="features-section py-5">
+    <div class="container">
+      <h2 class="text-center mb-5">Tu aventura artística comienza aquí</h2>
       <div class="row">
-        <!-- Grafo del museo (más ancho) -->
-        <div class="col-md-9">
-          <h2 class="card-title h4 mb-3">Mapa de salas</h2>
-          <div id="graph-container-salas" style="height: 500px; border: 1px solid #ccc;"></div>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+              <div class="feature-icon">
+                <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+              </div>
+              <h3 class="card-title">Descubre Museos</h3>
+              <p class="card-text">
+                Explora nuestra selección de museos y galerías con información detallada, 
+                ubicaciones y exposiciones actuales.
+              </p>
+            </div>
+          </div>
         </div>
-        
-        <!-- Leyenda (a la derecha, más estrecha) -->
-        <div class="col-md-3">
-          <h2 class="card-title h4 mb-3">Leyenda</h2>
-          
-          <!-- Leyenda de pisos -->
-          <div class="mb-4">
-            <h5 class="h6 mb-2">Pisos</h5>
-            <div class="floors-legend">
-              {% for floor in floors_range %}
-                <div class="floor-item">
-                  <span class="floor-indicator floor-{{ floor }}">P{{ floor }}</span>
-                  <span class="floor-name">Planta {{ floor }}</span>
-                </div>
-              {% endfor %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+              <div class="feature-icon">
+                <i class="fas fa-route fa-3x mb-3"></i>
+              </div>
+              <h3 class="card-title">Crea Rutas</h3>
+              <p class="card-text">
+                Diseña tus propias rutas culturales combinando diferentes lugares 
+                según tus intereses artísticos.
+              </p>
             </div>
           </div>
-          
-          <!-- Leyenda de iconos -->
-          <div class="mb-4">
-            <h5 class="h6 mb-2">Iconos</h5>
-            <div class="d-flex flex-column">
-              <div class="legend-item">
-                <i class="fas fa-door-open text-success"></i>
-                <span>Entrada</span>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+              <div class="feature-icon">
+                <i class="fas fa-share-alt fa-3x mb-3"></i>
               </div>
-              <div class="legend-item">
-                <i class="fas fa-door-closed text-danger"></i>
-                <span>Salida</span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Leyenda de tiempos -->
-          <div>
-            <h5 class="h6 mb-2">Conexiones</h5>
-            <div class="legend-item mt-2">
-              <i class="fas fa-arrow-right text-primary"></i>
-              <span>Los tiempos en las conexiones indican minutos entre salas</span>
+              <h3 class="card-title">Explora Comunidad</h3>
+              <p class="card-text">
+                Descubre rutas populares creadas por otros amantes del arte y encuentra 
+                nuevas joyas artísticas.
+              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="cta-section py-5 bg-primary text-white">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+          <h2>¿Listo para explorar?</h2>
+          <p class="mb-4">
+            Regístrate hoy para personalizar tus rutas culturales y empezar a descubrir arte y cultura a tu medida.
+          </p>
+          <div class="d-flex justify-content-center gap-3">
+            <a href="/museos/" class="btn btn-outline-light">Ver Museos</a>
+            <a href="{% url 'registro' %}" class="btn btn-outline-light">Crear Cuenta</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <p>© {% now "Y" %} Gallery Guide. Todos los derechos reservados.</p>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <ul class="list-inline mb-0">
+          <li class="list-inline-item">
+            <a href="/sobre-nosotros/">Sobre Nosotros</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="/contacto/">Contacto</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="/privacidad/">Política de Privacidad</a>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
-</div>
-
-<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-
-<script>
-  // ========= GRAFO PRINCIPAL: SALAS =========
-  const salaNodes = new vis.DataSet([
-    {% for room in rooms %}
-      { 
-        id: "{{ room.name }}", 
-        label: "{{ room.name }}\n{{ room.tiempo_visita }}m {% if room.is_entrance %}⟶{% elif room.is_exit %}⟵{% endif %}",
-        title: "{{ room.theme }}{% if room.theme %} - {% endif %}{{ room.description }}\n\nTiempo estimado: {{ room.tiempo_visita }} min\nPiso: {{ room.floor }}{% if room.is_entrance %}\nEntrada{% endif %}{% if room.is_exit %}\nSalida{% endif %}", 
-        group: "floor{{ room.floor }}",
-        level: {{ room.floor }}, // Nivel para separación vertical por pisos
-        font: { 
-          size: 14,
-          face: 'Montserrat',
-          bold: true 
-        }
-      },
-    {% endfor %}
-  ]);
-
-  const salaEdges = new vis.DataSet([
-    {% for from_room, to_room, transit_time in connections %}
-      { 
-        from: "{{ from_room }}", 
-        to: "{{ to_room }}", 
-        label: "{{ transit_time }}m",
-        title: "Tiempo de tránsito: {{ transit_time }} min",
-        arrows: {
-          to: {
-            enabled: true,
-            scaleFactor: 1.5,
-            type: 'arrow'
-          }
-        },
-        width: 2.5,
-        color: {color: '#777', highlight: 'var(--primary)', hover: '#444'},
-        smooth: {
-          enabled: true,
-          type: 'curvedCW',
-          roundness: 0.3,
-          forceDirection: 'none'
-        },
-        font: { 
-          size: 14,
-          color: '#333',
-          face: 'Montserrat',
-          background: {
-            enabled: true,
-            color: 'white',
-            size: 10,
-            strokeWidth: 3,
-            strokeColor: 'white'
-          },
-          align: 'horizontal',
-          vadjust: -10 // Ajustar verticalmente el texto para más espacio
-        }
-      },
-    {% endfor %}
-  ]);
-
-  const salaData = { nodes: salaNodes, edges: salaEdges };
-  const salaOptions = {
-    nodes: { 
-      shape: 'box',
-      shapeProperties: {
-        borderRadius: 10
-      },
-      font: { 
-        size: 14,
-        face: 'Montserrat'
-      }, 
-      borderWidth: 2,
-      margin: {
-        top: 15,
-        right: 15,
-        bottom: 15,
-        left: 15
-      },
-      shadow: true,
-      widthConstraint: {
-        maximum: 200
-      }
-    },
-    edges: { 
-      length: 350, // Mucho más espacio entre nodos
-      font: { 
-        size: 14
-      }
-    },
-    physics: {
-      enabled: false
-    },
-    layout: {
-      hierarchical: {
-        enabled: true,
-        levelSeparation: 200, // Más separación vertical
-        nodeSpacing: 350,     // Mucha más separación horizontal
-        direction: 'UD',      // Up to Down (arriba a abajo)
-        sortMethod: 'directed',
-        shakeTowards: 'roots' // Organiza mejor la jerarquía
-      }
-    },
-    groups: {
-      {% for floor in floors_range %}
-      'floor{{ floor }}': {
-        color: {
-          background: getFloorColor({{ floor }}),
-          border: getBorderColor({{ floor }}),
-          highlight: {
-            background: getFloorHighlightColor({{ floor }}),
-            border: getBorderColor({{ floor }})
-          }
-        }
-      },
-      {% endfor %}
-    },
-    interaction: {
-      zoomView: true,
-      dragView: true,
-      dragNodes: false,
-      hover: true
-    }
-  };
-
-  function getFloorColor(floorNumber) {
-    const colors = {
-      0: '#9b59b6',  // Morado para planta baja
-      1: '#3498db',  // Azul para primera planta
-      2: '#f39c12',  // Naranja para segunda planta
-      3: '#2ecc71',  // Verde para tercera planta
-    };
-    return colors[floorNumber] || '#95a5a6'; // Gris por defecto
-  }
-
-  function getFloorHighlightColor(floorNumber) {
-    const colors = {
-      0: '#ae7ac5',  // Morado más claro
-      1: '#5dade2',  // Azul más claro
-      2: '#f5b041',  // Naranja más claro
-      3: '#58d68d',  // Verde más claro
-    };
-    return colors[floorNumber] || '#b2bec3'; // Gris claro por defecto
-  }
-
-  function getBorderColor(floorNumber) {
-    const colors = {
-      0: '#8e44ad',  // Morado más oscuro
-      1: '#2980b9',  // Azul más oscuro
-      2: '#d35400',  // Naranja más oscuro
-      3: '#27ae60',  // Verde más oscuro
-    };
-    return colors[floorNumber] || '#7f8c8d'; // Gris oscuro por defecto
-  }
-
-  const salaContainer = document.getElementById('graph-container-salas');
-  const salaNetwork = new vis.Network(salaContainer, salaData, salaOptions);
-
-  // Ajustar el zoom para ver todo el grafo
-  salaNetwork.once("afterDrawing", function() {
-    salaNetwork.fit({
-      animation: {
-        duration: 1000,
-        easingFunction: "easeInOutQuad"
-      }
-    });
-  });
-</script>
-
-<style>
-  .time-badge {
-    background-color: var(--primary);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-weight: 600;
-  }
-  
-  /* Estilos para la leyenda */
-  .legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-  }
-  
-  .legend-item i {
-    width: 20px;
-    margin-right: 8px;
-    font-size: 1.2rem;
-    text-align: center;
-  }
-  
-  /* Estilos para la leyenda de pisos */
-  .floors-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .floor-item {
-    display: flex;
-    align-items: center;
-    font-size: 0.9rem;
-  }
-  
-  .floor-indicator {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    margin-right: 10px;
-  }
-  
-  .floor-0 { background-color: #9b59b6; } /* Morado para planta baja */
-  .floor-1 { background-color: #3498db; } /* Azul para primera planta */
-  .floor-2 { background-color: #f39c12; } /* Naranja para segunda planta */
-  .floor-3 { background-color: #2ecc71; } /* Verde para tercera planta */
-</style>
-{% endblock %}
+</footer>
+{% endblock content %}

@@ -21,6 +21,6 @@ from gestion_museos import views
 urlpatterns = [
     path('', views.listar_museos, name='listar_museos'),
     path('<slug:museum_slug>/', views.museum_graph_view, name='museum_graph'),
-    path('<slug:museum_slug>/sala/<str:room_name>/', views.room_artworks_view, name='room_artworks'),
-    path('artwork/<str:artwork_id>/', views.artwork_detail, name='artwork_detail'),
+    path('<slug:museum_slug>/sala/<slug:room_slug>/', views.room_artworks_view, name='room_artworks'),
+    path('artwork/<slug:artwork_slug>/', views.artwork_detail, name='artwork_detail'),
 ]

@@ -143,16 +143,16 @@ def obras_por_sala(request, room_name):
     except Room.DoesNotExist:
         return JsonResponse({'error': 'Sala no encontrada'}, status=404)
 
-def room_artworks_view(request, museum_slug, room_name):
+def room_artworks_view(request, museum_slug, room_slug):
     try:
         museum = Museum.nodes.get(slug=museum_slug)
-        room = Room.nodes.get(name=room_name)
+        room = Room.nodes.get(slug=room_slug)
         
         # Verificar que la sala pertenece al museo
         rooms_in_museum = museum.rooms.all()
-        museum_room_names = [r.name for r in rooms_in_museum]
+        museum_room_slugs = [r.slug for r in rooms_in_museum]
         
-        if room.name not in museum_room_names:
+        if room.slug not in museum_room_slugs:
             return render(request, 'error.html', {
                 'error_message': f'La sala "{room.name}" no pertenece al museo "{museum.name}".'
             })
@@ -164,13 +164,13 @@ def room_artworks_view(request, museum_slug, room_name):
         room.tiempo_visita = calcular_tiempo_sala(room)
         
         # Obtener la obra seleccionada (si existe en los parámetros)
-        selected_artwork_id = request.GET.get('artwork')
+        selected_artwork_slug = request.GET.get('artwork')
         selected_artwork = None
-        if selected_artwork_id:
-            for artwork in artworks:
-                if str(artwork.element_id) == selected_artwork_id:  # Cambiar id por element_id
-                    selected_artwork = artwork
-                    break
+        if selected_artwork_slug:
+            try:
+                selected_artwork = Artwork.nodes.get(slug=selected_artwork_slug)
+            except Artwork.DoesNotExist:
+                pass
         
         return render(request, 'room_artworks.html', {
             'museum': museum,
@@ -185,24 +185,25 @@ def room_artworks_view(request, museum_slug, room_name):
         })
     except Room.DoesNotExist:
         return render(request, 'error.html', {
-            'error_message': f'La sala con nombre "{room_name}" no existe.'
+            'error_message': f'La sala con slug "{room_slug}" no existe.'
         })
     except Exception as e:
         return render(request, 'error.html', {
             'error_message': f'Error inesperado: {str(e)}'
         })
 
-def artwork_detail(request, artwork_id):
+def artwork_detail(request, artwork_slug):
     try:
-        artwork = Artwork.nodes.get(element_id=artwork_id)
+        artwork = Artwork.nodes.get(slug=artwork_slug)
         
         # Formato para JSON
         artist = artwork.artist.single() if artwork.artist else None
-        movement = artwork.movement.single() if artwork.movement else None
+        movement = artwork.movement.single()
         
         return JsonResponse({
-            'id': artwork.element_id,  # Cambiar id por element_id
+            'id': artwork.slug,  # Usar slug como ID
             'title': artwork.title,
+            'slug': artwork.slug,
             'year': artwork.year,
             'description': artwork.description,
             'medium': artwork.medium,
@@ -211,9 +212,7 @@ def artwork_detail(request, artwork_id):
             'masterpiece': artwork.masterpiece,
             'image': artwork.image,
             'artist_name': artist.name if artist else "Desconocido",
-            'artist_id': artist.element_id if artist else None,  # Cambiar id por element_id
             'movement_name': movement.name if movement else "No especificado",
-            'movement_id': movement.element_id if movement else None,  # Cambiar id por element_id
         })
     except Artwork.DoesNotExist:
         return JsonResponse({'error': 'Artwork not found'}, status=404)

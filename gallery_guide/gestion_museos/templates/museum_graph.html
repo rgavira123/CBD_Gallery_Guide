@@ -96,6 +96,7 @@
         id: "{{ room.name }}", 
         label: "", // Dejamos vacío porque lo pintaremos manualmente
         roomName: "{{ room.name }}",
+        roomSlug: "{{ room.slug }}",  // Añadir slug
         roomTime: {{ room.tiempo_visita }},
         isEntrance: {% if room.is_entrance %}true{% else %}false{% endif %},
         isExit: {% if room.is_exit %}true{% else %}false{% endif %},
@@ -352,8 +353,8 @@
       const node = salaNodes.get(nodeId);
       if (node) {
         console.log("Navegando a sala:", node.roomName);
-        // Redirigir a la página de obras de la sala usando el nombre
-        window.location.href = `${window.location.pathname}sala/${encodeURIComponent(node.roomName)}/`;
+        // Redirigir a la página de obras de la sala usando el slug
+        window.location.href = `${window.location.pathname}sala/${node.roomSlug}/`;
       } else {
         console.error("Error: No se encontró el nodo:", nodeId);
       }

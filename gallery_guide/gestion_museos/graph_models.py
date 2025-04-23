@@ -31,7 +31,7 @@ class Museum(StructuredNode):
 
 class Room(StructuredNode):
     name = StringProperty(required=True)
-    slug = StringProperty()  # Ya no es unique_index
+    slug = StringProperty(unique_index=True)  # Cambiamos a unique_index para evitar duplicados
     description = StringProperty(default="")
     floor = IntegerProperty(default=0)
     is_entrance = BooleanProperty(default=False)
@@ -44,8 +44,16 @@ class Room(StructuredNode):
     artworks = RelationshipTo('Artwork', 'EXHIBITS')
     museum = RelationshipFrom('Museum', 'HAS_ROOM')
 
+    def save(self, *args, **kwargs):
+        # Genera el slug automáticamente basado en el nombre
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+        return self
+
 class Artwork(StructuredNode):
     title = StringProperty(required=True)
+    slug = StringProperty(unique_index=True)  # Añadimos slug
     year = StringProperty()
     description = StringProperty(default="")
     medium = StringProperty(default="")
@@ -57,6 +65,13 @@ class Artwork(StructuredNode):
     artist = RelationshipTo('Artist', 'CREATED_BY')
     movement = RelationshipTo('Movement', 'BELONGS_TO')
     exhibited_in = RelationshipFrom('Room', 'EXHIBITS')
+
+    def save(self, *args, **kwargs):
+        # Genera el slug automáticamente basado en el título
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+        return self
 
 class Artist(StructuredNode):
     name = StringProperty(unique_index=True, required=True)

@@ -1,5 +1,6 @@
 from .graph_models import Museum, Room, Artwork, Artist, Movement, ConnectedRel
 from neomodel import db
+from django.utils.text import slugify
 
 # ---------- MOVIMIENTOS ----------
 def create_movements():
@@ -142,6 +143,7 @@ def create_artworks(artists, movements):
     for title, year, desc, medium, dimensions, rating, masterpiece, artist_name, movement_name in artworks_data:
         artwork = Artwork(
             title=title,
+            slug=slugify(title),  # Crear slug a partir del título
             year=year,
             description=desc,
             medium=medium,
@@ -177,8 +179,12 @@ def create_museums_and_rooms(artworks):
             is_ent = entrance and i == 0
             is_ex = exit and i == num_rooms - 1
             theme = themes[i] if themes else ""
+            room_name = f"{name_prefix}.{i+1}"
+            room_slug = slugify(room_name)  # Crear slug a partir del nombre
+            
             r = Room(
-                name=f"{name_prefix}.{i+1}",
+                name=room_name,
+                slug=room_slug,  # Asignar slug aquí
                 floor=floor_index,
                 is_entrance=is_ent,
                 is_exit=is_ex,
