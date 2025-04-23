@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'gestion_museos',
     'home',
     'gestion_usuarios',
-    'gestion_autores'
+    'gestion_autores',
+    'gestion_movimientos'
 ]
 
 MIDDLEWARE = [

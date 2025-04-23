@@ -64,6 +64,9 @@
               <a class="nav-link {% if request.path == '/autores/' %}active{% endif %}" href="/autores/">Autores</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link {% if request.path == '/movimientos/' %}active{% endif %}" href="/movimientos/">Movimientos</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {% if request.path == '/rutas/' %}active{% endif %}" href="/rutas/">Explora Rutas</a>
             </li>
             {% if user.is_authenticated %}
