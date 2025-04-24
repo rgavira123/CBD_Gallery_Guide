@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'home',
     'gestion_usuarios',
     'gestion_autores',
-    'gestion_movimientos'
+    'gestion_movimientos',
+    'gestion_rutas'
 ]
 
 MIDDLEWARE = [

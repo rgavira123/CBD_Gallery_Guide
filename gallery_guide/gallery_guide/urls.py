@@ -25,4 +25,6 @@ urlpatterns = [
     path('autores/', include('gestion_autores.urls')),
     path('movimientos/', include('gestion_movimientos.urls')),
     path('auth/', include('gestion_usuarios.urls')),
+    path('rutas/', include('gestion_usuarios.urls')),
+
 ]
