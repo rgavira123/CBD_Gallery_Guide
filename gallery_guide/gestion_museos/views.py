@@ -196,12 +196,12 @@ def artwork_detail(request, artwork_slug):
     try:
         artwork = Artwork.nodes.get(slug=artwork_slug)
         
-        # Formato para JSON
-        artist = artwork.artist.single() if artwork.artist else None
-        movement = artwork.movement.single()
+        # Obtener artista y movimiento
+        artist = artwork.artist.single() if artwork.artist.all() else None
+        movement = artwork.movement.single() if artwork.movement.all() else None
         
         return JsonResponse({
-            'id': artwork.slug,  # Usar slug como ID
+            'id': artwork.slug,
             'title': artwork.title,
             'slug': artwork.slug,
             'year': artwork.year,
@@ -212,7 +212,9 @@ def artwork_detail(request, artwork_slug):
             'masterpiece': artwork.masterpiece,
             'image': artwork.image,
             'artist_name': artist.name if artist else "Desconocido",
+            'artist_slug': artist.slug if artist else "",  # Añadido
             'movement_name': movement.name if movement else "No especificado",
+            'movement_slug': movement.slug if movement else ""  # Añadido
         })
     except Artwork.DoesNotExist:
-        return JsonResponse({'error': 'Artwork not found'}, status=404)
+        return JsonResponse({'error': 'Obra no encontrada'}, status=404)

@@ -23,5 +23,6 @@ urlpatterns = [
     path('', include('home.urls')),
     path('museos/', include('gestion_museos.urls')),
     path('autores/', include('gestion_autores.urls')),
+    path('movimientos/', include('gestion_movimientos.urls')),
     path('auth/', include('gestion_usuarios.urls')),
 ]
