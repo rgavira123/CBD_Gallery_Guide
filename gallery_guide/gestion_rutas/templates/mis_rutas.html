@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Mis Rutas</h1>
+
+    {% if rutas %}
+        <div class="row">
+            {% for ruta in rutas %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ ruta.name }}</h5>
+                            <p class="card-text">
+                                Tiempo estimado: {{ ruta.total_time }} minutos<br>
+                                Valor artístico: {{ ruta.total_value }} puntos<br>
+                                {% if ruta.is_public %}
+                                    <span class="badge bg-success">Pública</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Privada</span>
+                                {% endif %}
+                            </p>
+                            <div class="mt-auto">
+                                <a href="{% url 'gestion_rutas:ver_ruta' ruta.slug %}" class="btn btn-primary w-100">
+                                    Ver Ruta
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Todavía no has creado ninguna ruta.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

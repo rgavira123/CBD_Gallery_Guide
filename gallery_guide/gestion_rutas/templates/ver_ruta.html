@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load ruta_filters %}
+
+{% block title %}{{ route.name }} - Gallery Guide{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>{{ route.name }}</h1>
+            {% if route.description %}
+                <p class="text-muted">{{ route.description }}</p>
+            {% endif %}
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Detalles de la ruta</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Tiempo estimado:</strong> {{ route.total_time }} minutos</p>
+                            <p><strong>Interés total:</strong> {{ route.total_value }} puntos</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Creado por:</strong> {{ route.creator_username }}</p>
+                            <p><strong>Fecha de creación:</strong> {{ route.created_at|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Mapa de la ruta</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="grafo" style="height: 500px; width: 100%;"></div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <span class="badge badge-warning me-2" style="background-color: #ffc107;">&nbsp;</span> Paradas con obras destacadas
+                        <span class="badge badge-light ms-3 me-2" style="background-color: #d3d3d3;">&nbsp;</span> Salas de paso
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Obras destacadas</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                    {% for sala in salas_visitadas %}
+                        {% if sala.element_id in paradas_ids %}
+                            <li class="list-group-item">
+                                <h6 class="mb-1">Sala: {{ sala.name }}</h6>
+                                <ul class="list-unstyled ms-3">
+                                {% if obras_por_sala.items %}
+                                    {% for sala_id, obras in obras_por_sala.items %}
+                                        {% if sala_id == sala.element_id %}
+                                            {% for obra in obras %}
+                                            <li>
+                                                <span class="text-primary">{{ obra.title }}</span>
+                                                {% if obra.artist.all %}
+                                                    <small class="text-muted d-block">
+                                                    {% for artist in obra.artist.all %}
+                                                        {{ artist.name }}{% if not forloop.last %}, {% endif %}
+                                                    {% endfor %}
+                                                    </small>
+                                                {% endif %}
+                                            </li>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <li><em>No hay obras destacadas</em></li>
+                                {% endif %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluir vis.js para el grafo -->
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script type="text/javascript">
+    // Preparar los datos para el grafo
+    var nodes = [
+        {% for sala in salas_visitadas %}
+        {
+            id: "{{ sala.element_id }}",
+            label: "{{ sala.name|escapejs }}",
+            title: "{{ sala.name|escapejs }}{% if sala.element_id in paradas_ids %}\n(Parada con obras){% endif %}",
+            color: {% if sala.element_id in paradas_ids %}"#ffc107"{% else %}"#d3d3d3"{% endif %},
+            font: { color: {% if sala.element_id in paradas_ids %}"#000000"{% else %}"#333333"{% endif %} }
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // Crear una lista simple de IDs de salas en orden
+    var salaIds = [
+        {% for sala in salas_visitadas %}
+            "{{ sala.element_id }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // Generar las aristas con JavaScript puro
+    var edges = [];
+    for (var i = 0; i < salaIds.length - 1; i++) {
+        edges.push({
+            from: salaIds[i],
+            to: salaIds[i + 1],
+            arrows: "to",
+            color: { color: "#6c757d" },
+            width: 2
+        });
+    }
+
+    // Configurar el grafo
+    var container = document.getElementById('grafo');
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {
+        nodes: {
+            shape: 'box',
+            margin: 10,
+            borderWidth: 1,
+            shadow: true
+        },
+        edges: {
+            smooth: {
+                type: 'curvedCW',
+                roundness: 0.2
+            }
+        },
+        physics: {
+            stabilization: true,
+            barnesHut: {
+                gravitationalConstant: -2000,
+                centralGravity: 0.3,
+                springLength: 150,
+                springConstant: 0.04
+            }
+        },
+        layout: {
+            hierarchical: {
+                direction: 'LR',
+                sortMethod: 'directed',
+                levelSeparation: 150
+            }
+        }
+    };
+    var network = new vis.Network(container, data, options);
+</script>
+{% endblock %}

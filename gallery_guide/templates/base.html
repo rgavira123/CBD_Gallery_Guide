@@ -71,7 +71,7 @@
             </li>
             {% if user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link {% if request.path == '/mis-rutas/' %}active{% endif %}" href="/mis-rutas/">Mis Rutas</a>
+              <a class="nav-link {% if request.resolver_match.url_name == 'mis_rutas' %}active{% endif %}" href="{% url 'gestion_rutas:mis_rutas' %}">Mis Rutas</a>
             </li>
             {% endif %}
           </ul>
