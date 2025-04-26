@@ -1,5 +1,6 @@
 <!-- filepath: c:\Users\ramon\trabajo_cbd\gallery_guide\gestion_museos\templates\room_artworks.html -->
 {% extends 'base.html' %}
+{% load static%}
 {% block title %}<title>{{ room.name }} | Gallery Guide</title>{% endblock %}
 
 {% block content %}
@@ -48,7 +49,7 @@
                 onclick="selectArtwork('{{ artwork.slug }}')">
               <div class="artwork-image">
                 {% if artwork.image %}
-                <img src="data:image/jpeg;base64,{{ artwork.image }}" alt="{{ artwork.title }}">
+                <img src="{% static 'images/obras/' %}{{ artwork.image|cut:'images/obras/' }}" alt="{{ artwork.title }}">
                 {% else %}
                 <div class="placeholder-image">
                   <i class="fas fa-image"></i>
@@ -84,7 +85,7 @@
         </div>
       </div>
     </div>
-    
+  
     <!-- Columna derecha: Ficha técnica -->
     <div class="col-lg-5">
       <div class="card shadow h-100">
@@ -97,7 +98,7 @@
             <!-- Imagen de la obra -->
             <div class="detail-image-container mb-4">
               {% if selected_artwork.image %}
-              <img src="data:image/jpeg;base64,{{ selected_artwork.image }}" alt="{{ selected_artwork.title }}" class="detail-image">
+              <img src="{% static 'images/obras/' %}{{ selected_artwork.image|cut:'images/obras/' }}" alt="{{ selected_artwork.title }}" class="detail-image">
               {% else %}
               <div class="detail-placeholder-image">
                 <i class="fas fa-image fa-3x"></i>
@@ -186,17 +187,18 @@
   }
   
   function renderArtworkDetail(artwork) {
+    const baseImageUrl = '/static/images/obras/'; // Ruta base para las imágenes
+    const image = artwork.image ?
+      `<img src="${artwork.image.startsWith('http') ? artwork.image : baseImageUrl + artwork.image}" alt="${artwork.title}" class="detail-image">` :
+      `<div class="detail-placeholder-image"><i class="fas fa-image fa-3x"></i></div>`;
+
     const masterpiece = artwork.masterpiece ? 
       `<div class="masterpiece-ribbon"><span>Obra Maestra</span></div>` : '';
-    
-    const image = artwork.image ?
-      `<img src="data:image/jpeg;base64,${artwork.image}" alt="${artwork.title}" class="detail-image">` :
-      `<div class="detail-placeholder-image"><i class="fas fa-image fa-3x"></i></div>`;
-    
+
     const stars = Array(5).fill(0).map((_, i) => 
       `<i class="${i < artwork.rating ? 'fas' : 'far'} fa-star"></i>`
     ).join('');
-    
+
     return `
       <div class="detail-content">
         <div class="detail-image-container mb-4">
