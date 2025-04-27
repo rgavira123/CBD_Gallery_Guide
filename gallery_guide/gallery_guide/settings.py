@@ -125,13 +125,15 @@ LOGIN_REDIRECT_URL = '/'
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# Cambiar el idioma a español
+LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC'
-
+# Asegúrate de que estas configuraciones están presentes
 USE_I18N = True
+USE_L10N = True
 
-USE_TZ = True
+# Configurar zona horaria española (opcional)
+TIME_ZONE = 'Europe/Madrid'
 
 
 # Static files (CSS, JavaScript, Images)

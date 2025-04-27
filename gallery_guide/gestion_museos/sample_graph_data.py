@@ -147,6 +147,14 @@ def create_artworks(artists, movements):
 
     artworks = []
     for title, year, desc, medium, dimensions, rating, masterpiece, artist_name, movement_name in artworks_data:
+        if title == "La creación de Adán":
+            imagen = 'creacion-adan.jpg'
+        elif title == "El Juicio Final":
+            imagen = 'juicio-final.jpg'
+        elif title == "La escuela de Atenas":
+            imagen = 'escuela-atenas.jpg'
+        else:
+            imagen = ""
         artwork = Artwork(
             title=title,
             slug=slugify(title),  # Crear slug a partir del título
@@ -156,7 +164,7 @@ def create_artworks(artists, movements):
             dimensions=dimensions,
             rating=rating,
             masterpiece=masterpiece,
-            image=""
+            image=imagen
         ).save()
         artwork.artist.connect(artists[artist_name])
         artwork.movement.connect(movements[movement_name])
