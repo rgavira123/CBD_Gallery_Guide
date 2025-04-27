@@ -71,9 +71,6 @@
               <a class="nav-link {% if request.path == '/movimientos/' %}active{% endif %}" href="/movimientos/">Movimientos</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.path == '/rutas/' %}active{% endif %}" href="/rutas/">Explora Rutas</a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link" href="{% url 'gestion_rutas:explorar_rutas' %}">Explorar Rutas</a>
             </li>
             {% if user.is_authenticated %}

@@ -5,6 +5,7 @@ from gestion_rutas.graph_models import Route
 from gestion_rutas.forms import CreateRouteForm
 from gestion_museos.graph_models import Museum, Room, Artwork, Artist, Movement
 from neomodel import db, MultipleNodesReturned
+from neomodel.exceptions import MultipleNodesReturned
 
 def get_neo4j_object_or_404(cls, **kwargs):
     try:
@@ -405,30 +406,45 @@ def mis_rutas_view(request):
 
 def ruta_grafo_view(request, route_slug):
     try:
-        if request.user.is_authenticated:
-            route = Route.nodes.get(slug=route_slug, creator_username=request.user.username)
-        else:
-            route = Route.nodes.get(slug=route_slug, is_public=True)
+        # Intentar obtener la ruta por su slug
+        route = Route.nodes.get(slug=route_slug)
+        
+        # Comprobar permisos de acceso
+        if not route.is_public and (not request.user.is_authenticated or request.user.username != route.creator_username):
+            # Si la ruta es privada y el usuario no es el creador
+            messages.error(request, "No tienes permiso para ver esta ruta.")
+            return redirect('gestion_rutas:explorar_rutas')
+            
     except Route.DoesNotExist:
         raise Http404(f"No Route found with slug: {route_slug}")
     except MultipleNodesReturned:
+        # Si hay múltiples rutas con el mismo slug (no debería ocurrir)
         routes = list(Route.nodes.filter(slug=route_slug))
         if routes:
+            # Usar la primera ruta encontrada
             route = routes[0]
-            messages.warning(request, "Se encontraron múltiples rutas con el mismo nombre.")
+            # Registrar error para revisar después (duplicados)
+            print(f"Multiple routes found with slug: {route_slug}")
         else:
             raise Http404(f"No Route found with slug: {route_slug}")
 
+    # Obtener salas visitadas
     salas_visitadas = route.rooms.all()
+    # Marcar salas que son paradas en la ruta
     paradas = set(room.element_id for room in route.stops.all())
 
+    # Organizar obras por sala
     obras_por_sala = {}
     for sala in salas_visitadas:
+        # Solo procesar salas que son paradas
         if sala.element_id in paradas:
             obras_para_esta_sala = []
+            # Obtener todas las obras de arte de la ruta
             for artwork in route.sees.all():
-                for room in artwork.exhibited_in.all():
-                    if room.element_id == sala.element_id:
+                # Verificar si la obra está en esta sala
+                artwork_rooms = artwork.exhibited_in.all()
+                for artwork_room in artwork_rooms:
+                    if artwork_room.element_id == sala.element_id:
                         obras_para_esta_sala.append(artwork)
                         break
             obras_por_sala[sala.element_id] = obras_para_esta_sala
@@ -503,3 +519,29 @@ def explorar_rutas_view(request):
     }
     
     return render(request, 'explorar_rutas.html', context)
+
+def toggle_route_visibility(request, route_slug):
+    """Cambia la visibilidad (pública/privada) de una ruta"""
+    if not request.user.is_authenticated:
+        messages.error(request, "Debes iniciar sesión para modificar rutas.")
+        return redirect('login')
+        
+    try:
+        # Asegurar que solo el propietario puede cambiar la visibilidad
+        route = Route.nodes.get(slug=route_slug, creator_username=request.user.username)
+        
+        # Cambiar la visibilidad
+        route.is_public = not route.is_public
+        route.save()
+        
+        # Mensaje de feedback
+        status = "pública" if route.is_public else "privada"
+        messages.success(request, f'La ruta "{route.name}" ahora es {status}.')
+        
+    except Route.DoesNotExist:
+        messages.error(request, "No se encontró la ruta o no tienes permisos para modificarla.")
+    except Exception as e:
+        messages.error(request, f"Ocurrió un error al cambiar la visibilidad: {str(e)}")
+    
+    # Volver a la página de la ruta
+    return redirect('gestion_rutas:ver_ruta', route_slug=route_slug)
