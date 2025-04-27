@@ -16,3 +16,4 @@ python gallery_guide/manage.py populate_db
 # Iniciar el servidor de desarrollo
 echo "Iniciando el servidor..."
 exec python gallery_guide/manage.py runserver 0.0.0.0:8000
+#Saltos de linea
