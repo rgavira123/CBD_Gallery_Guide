@@ -160,6 +160,115 @@ def create_artworks(artists, movements):
     return artworks
 
 # ---------- MUSEOS Y SALAS ----------
+
+# ---------- MUSEO DEL PRADO ----------
+def create_museo_del_prado(movements):
+    print("🏛️ Creando el Museo del Prado...")
+
+    from random import choice, randint, sample
+
+    # Crear el museo
+    prado = Museum(
+        name="Museo del Prado",
+        slug=slugify("Museo del Prado"),
+        location="Madrid",
+        description="Colección de obras maestras de los siglos XII al XIX.",
+        foundation_year="1819",
+        floors=2,
+        image=""
+    ).save()
+
+    # Crear 100 artistas nuevos
+    artistas_prado = []
+    for i in range(1, 101):
+        nombre = f"Artista Prado {i}"
+        artista = Artist(
+            name=nombre,
+            slug=slugify(nombre),
+            bio="Artista ficticio del Museo del Prado",
+            birth_date=str(randint(1400, 1900)),
+            death_date=str(randint(1900, 2000)),
+            nationality="Española",
+            image=""
+        ).save()
+        movimiento = choice(list(movements.values()))
+        artista.movements.connect(movimiento)
+        artistas_prado.append(artista)
+
+    # Crear 400 obras nuevas
+    obras_prado = []
+    for i in range(1, 401):
+        titulo = f"Obra Prado {i}"
+        obra = Artwork(
+            title=titulo,
+            slug=slugify(titulo),
+            year=str(randint(1500, 1900)),
+            description="Obra de arte ficticia del Museo del Prado.",
+            medium="Óleo sobre lienzo",
+            dimensions=f"{randint(50, 200)} x {randint(50, 200)} cm",
+            rating=randint(3, 5),
+            masterpiece=(i % 7 == 0),  # Cada 7 obras, una obra magistral
+            image=""
+        ).save()
+        obra.artist.connect(choice(artistas_prado))
+        obra.movement.connect(choice(list(movements.values())))
+        obras_prado.append(obra)
+
+    # Crear 40 salas, 20 por planta
+    salas_prado = []
+    for floor in range(2):
+        for j in range(1, 21):
+            sala_nombre = f"Prado - Planta {floor} - Sala {j}"
+            sala = Room(
+                name=sala_nombre,
+                slug=slugify(sala_nombre),
+                floor=floor,
+                is_entrance=(floor == 0 and j == 1),
+                is_exit=(floor == 1 and j == 20),
+                theme=f"Tema {randint(1, 10)}",
+                description="Sala temática del Museo del Prado.",
+                image=""
+            ).save()
+            prado.rooms.connect(sala)
+            salas_prado.append(sala)
+
+    print(f"🏛️ Se han creado {len(salas_prado)} salas para el Prado.")
+
+    # Asignar 10 obras a cada sala
+    obras_restantes = obras_prado.copy()
+    for sala in salas_prado:
+        for _ in range(10):
+            if obras_restantes:
+                obra = obras_restantes.pop()
+                sala.artworks.connect(obra)
+
+    print("🖼️ Obras asignadas a salas del Prado.")
+
+    # Conectar salas (no linealmente)
+    for idx, sala in enumerate(salas_prado):
+        # Siempre conectar a la siguiente sala
+        if idx + 1 < len(salas_prado):
+            rel = sala.connected_to.connect(salas_prado[idx + 1])
+            rel.distance = randint(5, 15)
+            rel.transit_time = randint(1, 4)
+            rel.save()
+
+        # Además, conexiones "random" a otras salas cercanas
+        conexiones_extra = sample(
+            [s for s in salas_prado if s != sala and abs(salas_prado.index(s) - idx) <= 5],
+            k=min(2, len(salas_prado)-1)
+        )
+        for target_sala in conexiones_extra:
+            if not sala.connected_to.is_connected(target_sala):
+                rel = sala.connected_to.connect(target_sala)
+                rel.distance = randint(5, 20)
+                rel.transit_time = randint(1, 5)
+                rel.save()
+
+    print("🔗 Salas del Prado conectadas con estructura variada.")
+
+
+
 def create_museums_and_rooms(artworks):
     print("🏛️ Creando museos y asignando obras...")
 
