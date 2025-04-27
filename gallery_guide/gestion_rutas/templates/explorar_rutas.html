@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4">Explorar Rutas Públicas</h1>
+    
+    <!-- Sección de filtros -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{% url 'gestion_rutas:explorar_rutas' %}" class="row g-3">
+                <!-- Filtro por museo -->
+                <div class="col-md-4">
+                    <label for="museum" class="form-label">Museo</label>
+                    <select name="museum" id="museum" class="form-select">
+                        <option value="">Todos los museos</option>
+                        {% for museum in museums %}
+                            <option value="{{ museum.slug }}" {% if filters.museum == museum.slug %}selected{% endif %}>
+                                {{ museum.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Filtro por tiempo máximo -->
+                <div class="col-md-4">
+                    <label for="max_time" class="form-label">Tiempo máximo (minutos)</label>
+                    <input type="number" class="form-control" id="max_time" name="max_time" 
+                           value="{{ filters.max_time|default:'' }}" min="0" step="5">
+                </div>
+                
+                <!-- Filtro por creador -->
+                <div class="col-md-4">
+                    <label for="creator" class="form-label">Creador</label>
+                    <select name="creator" id="creator" class="form-select">
+                        <option value="">Todos los creadores</option>
+                        {% for creator in creators %}
+                            <option value="{{ creator }}" {% if filters.creator == creator %}selected{% endif %}>
+                                {{ creator }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-primary">Aplicar filtros</button>
+                    <a href="{% url 'gestion_rutas:explorar_rutas' %}" class="btn btn-outline-secondary">Limpiar filtros</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Resultados -->
+    {% if routes %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for route in routes %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ route.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        Creada por: {{ route.creator_username }}
+                    </h6>
+                    <p class="card-text">
+                        <strong>Museo:</strong> {{ route.museum.single.name }}<br>
+                        <strong>Tiempo estimado:</strong> {{ route.total_time }} minutos<br>
+                        <strong>Valor total:</strong> {{ route.total_value }}
+                    </p>
+                    <p class="card-text">{{ route.description|truncatewords:30 }}</p>
+                </div>
+                <div class="card-footer bg-white border-top-0 d-flex justify-content-end">
+                    <a href="{% url 'gestion_rutas:ver_ruta' route.slug %}" class="btn btn-primary">Ver Ruta</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <p>No hay rutas públicas disponibles con los filtros seleccionados.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

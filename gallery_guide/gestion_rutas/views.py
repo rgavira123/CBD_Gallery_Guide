@@ -446,3 +446,60 @@ def safe_redirect(request, url_name, fallback_url='/'):
         return redirect(url_name)
     except NoReverseMatch:
         return redirect(fallback_url)
+
+def explorar_rutas_view(request):
+    # Base query - all public routes
+    public_routes = Route.nodes.filter(is_public=True)
+    
+    # Preparar los filtros
+    filters = {}
+    
+    # Filtrar por museo
+    museum_slug = request.GET.get('museum')
+    if museum_slug:
+        # Filtrar rutas por museo específico
+        filtered_routes = []
+        for route in public_routes:
+            try:
+                museum = route.museum.single()
+                if museum and museum.slug == museum_slug:
+                    filtered_routes.append(route)
+            except:
+                pass  # Ignorar rutas que no tengan museo
+        public_routes = filtered_routes
+        filters['museum'] = museum_slug
+    
+    # Obtener todos los museos para el selector
+    # Importar correctamente el modelo Museum
+    from neomodel import db
+    query = "MATCH (m:Museum) RETURN m"
+    results, _ = db.cypher_query(query)
+    museums = [Museum.inflate(row[0]) for row in results]
+    
+    # Filtrar por tiempo máximo
+    max_time = request.GET.get('max_time')
+    if max_time and max_time.isdigit():
+        max_time_int = int(max_time)
+        filtered_routes = [r for r in public_routes if r.total_time <= max_time_int]
+        public_routes = filtered_routes
+        filters['max_time'] = max_time
+    
+    # Filtrar por creador
+    creator = request.GET.get('creator')
+    if creator:
+        filtered_routes = [r for r in public_routes if r.creator_username == creator]
+        public_routes = filtered_routes
+        filters['creator'] = creator
+    
+    # Obtener lista de creadores únicos para el filtro
+    creators = list(set(route.creator_username for route in Route.nodes.filter(is_public=True)))
+    
+    context = {
+        'routes': public_routes,
+        'museums': museums,
+        'creators': creators,
+        'filters': filters,
+        'title': 'Explorar Rutas',
+    }
+    
+    return render(request, 'explorar_rutas.html', context)
