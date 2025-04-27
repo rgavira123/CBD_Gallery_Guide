@@ -15,7 +15,7 @@ COPY ../requirements.txt /app/requirements.txt
 # Instalar dependencias de Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del proyecto
+# Copiar el resto del proyectoss
 COPY .. /app
 
 # Hacer ejecutable el script de entrada
