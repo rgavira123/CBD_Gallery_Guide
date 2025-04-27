@@ -32,6 +32,7 @@ services:
     container_name: neo4j_db
     environment:
       NEO4J_AUTH: "neo4j/${NEO4J_PASSWORD}"
+      NEO4JLABS_PLUGINS: '["apoc"]'
     ports:
       - "7474:7474"
       - "7687:7687"
