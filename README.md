@@ -8,7 +8,7 @@ Actualmente, Gallery Guide se encuentra en fase de desarrollo. A continuación, 
 
 ### 1. Instalación mediante Docker (Recomendada)
 
-Esta es la forma más sencilla para levantar la aplicación.
+Esta es la forma más sencilla para levantar la aplicación. Asegúrate de tener Docker encendido en tu máquina.
 
 #### Pasos:
 
