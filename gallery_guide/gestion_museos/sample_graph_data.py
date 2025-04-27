@@ -68,6 +68,10 @@ def create_artists(movements):
     for name, bio, birth, death, nat, movs in artist_data:
         if name == 'Leonardo da Vinci':
             imagen = 'davinci.jpg'
+        elif name == 'Rafael Sanzio':
+            imagen = 'Rafael Sanzio.jpg'
+        elif name == 'Miguel Ángel':
+            imagen = 'Miguel Ángel.jpg'            
         else:
             imagen=""
         a = Artist(

@@ -6,7 +6,7 @@
     <h1 class="mb-4">Explorar Rutas Públicas</h1>
     
     <!-- Sección de filtros -->
-    <div class="card mb-4">
+    <div class="card mb-4 border-primary shadow">
         <div class="card-header bg-light">
             <h5 class="mb-0">Filtros</h5>
         </div>
@@ -59,20 +59,62 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for route in routes %}
         <div class="col">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">{{ route.name }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">
-                        Creada por: {{ route.creator_username }}
-                    </h6>
-                    <p class="card-text">
-                        <strong>Museo:</strong> {{ route.museum.single.name }}<br>
-                        <strong>Tiempo estimado:</strong> {{ route.total_time }} minutos<br>
-                        <strong>Valor total:</strong> {{ route.total_value }}
-                    </p>
-                    <p class="card-text">{{ route.description|truncatewords:30 }}</p>
+            <div class="card h-100 shadow custom-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">{{ route.name }}</h5>
                 </div>
-                <div class="card-footer bg-white border-top-0 d-flex justify-content-end">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-3 text-muted d-flex align-items-center">
+                        <span class="badge bg-secondary rounded-pill me-2">{{ route.creator_username }}</span>
+                        <small>Creador</small>
+                    </h6>
+                    
+                    <div class="card-text mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-building me-2 text-primary"></i>
+                            <strong>Museo:</strong>
+                            <span class="ms-2">
+                                {% if route.museum_name %}
+                                    {{ route.museum_name }}
+                                {% elif route.museum %}
+                                    {% if route.museum.single %}
+                                        {{ route.museum.single.name }}
+                                    {% elif route.museum.all.0 %}
+                                        {{ route.museum.all.0.name }}
+                                    {% else %}
+                                        No especificado
+                                    {% endif %}
+                                {% else %}
+                                    No especificado
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-clock me-2 text-primary"></i>
+                            <strong>Tiempo estimado:</strong>
+                            <span class="ms-2">{{ route.total_time }} minutos</span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-star me-2 text-primary"></i>
+                            <strong>Valor total:</strong>
+                            <span class="ms-2">{{ route.total_value }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-text mt-3 border-top pt-3">
+                        <p class="text-muted">
+                            {% if route.description %}
+                                {{ route.description|truncatewords:15 }}
+                            {% else %}
+                                <em>Sin descripción disponible</em>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Creada: {{ route.created_at|date:"d/m/Y" }}</small>
                     <a href="{% url 'gestion_rutas:ver_ruta' route.slug %}" class="btn btn-primary">Ver Ruta</a>
                 </div>
             </div>
@@ -80,9 +122,50 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="alert alert-info">
+    <div class="alert alert-info shadow">
         <p>No hay rutas públicas disponibles con los filtros seleccionados.</p>
     </div>
     {% endif %}
 </div>
+
+<style>
+    .custom-card {
+        border: 3px solid #fd410d;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        margin-bottom: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+    }
+    
+    .custom-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        border-color: #ca500a;
+    }
+    
+    .custom-card .card-header {
+        border-top-left-radius: 7px;
+        border-top-right-radius: 7px;
+        border-bottom: 3px solid #ca170a;
+    }
+    
+    .custom-card .card-footer {
+        border-top: 2px solid #e9ecef;
+        background-color: #f8f9fa;
+        border-bottom-left-radius: 7px;
+        border-bottom-right-radius: 7px;
+    }
+    
+    /* Sombra interna para dar más profundidad */
+    .custom-card .card-body {
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.03);
+    }
+    
+    /* Efecto de enfoque al pasar el cursor */
+    .col:hover .custom-card {
+        box-shadow: 0 15px 30px rgba(253, 85, 13, 0.2);
+        border-color: #fd290d;
+    }
+</style>
 {% endblock %}

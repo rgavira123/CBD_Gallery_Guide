@@ -510,8 +510,24 @@ def explorar_rutas_view(request):
     # Obtener lista de creadores únicos para el filtro
     creators = list(set(route.creator_username for route in Route.nodes.filter(is_public=True)))
     
+    # Preparar rutas con información adicional
+    routes_with_info = []
+    for route in public_routes:
+        # Intentar obtener el nombre del museo
+        museum_name = "No especificado"
+        try:
+            museum = route.museum.single()
+            if museum:
+                museum_name = museum.name
+        except:
+            pass
+        
+        # Añadir propiedad explícita para el nombre del museo
+        route.museum_name = museum_name
+        routes_with_info.append(route)
+    
     context = {
-        'routes': public_routes,
+        'routes': routes_with_info,
         'museums': museums,
         'creators': creators,
         'filters': filters,
