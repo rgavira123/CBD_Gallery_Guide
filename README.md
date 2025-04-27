@@ -44,6 +44,12 @@ Esto construirá las imágenes necesarias, levantará PostgreSQL, Neo4j y el con
 http://localhost:8000
 ```
 
+Para apagar y eliminar los contenedores en caso de fallo o para limpiar el sistema:
+
+```bash
+docker-compose down
+```
+
 ---
 
 ### 2. Instalación Local Tradicional
