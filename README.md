@@ -50,6 +50,17 @@ Para apagar y eliminar los contenedores en caso de fallo o para limpiar el siste
 docker-compose down
 ```
 
+⚠️ **Importante**:  
+En caso de error relacionado con el script `entrypoint.sh` (por ejemplo, `no such file or directory`), asegúrate en Visual Studio Code de cambiar la configuración de saltos de línea de **CRLF** a **LF**:
+
+1. Abre el archivo `docker/entrypoint.sh` en VSCode.
+2. En la esquina inferior derecha, haz clic donde pone `CRLF`.
+3. Selecciona `LF`.
+4. Guarda el archivo.
+
+De esta forma el contenedor podrá ejecutar correctamente el script de entrada.
+
+
 ---
 
 ### 2. Instalación Local Tradicional
